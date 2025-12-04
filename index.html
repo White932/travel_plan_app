@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>東京旅遊助手 Ultimate Precision</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --theme-color: #FF4757;
+            --glass-blur: 20px;
+            --glass-opacity: 0.65;
+            --glass-saturation: 180%;
+            --card-border: rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f2f5;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior-y: none; 
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        [v-cloak] { display: none; }
+        
+        /* 動態背景容器 */
+        .app-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center; z-index: -1;
+            transition: background-image 0.5s ease;
+        }
+        /* 雜色紋理層，增加玻璃質感 */
+        .app-noise {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjAzIi8+PC9zdmc+');
+            pointer-events: none; z-index: -1; opacity: 0.6;
+        }
+        .app-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.6));
+            transition: all 0.3s ease;
+        }
+
+        .app-container {
+            display: flex; flex-direction: column; height: 100dvh; width: 100%; margin: 0 auto;
+            position: relative; overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 600px; margin: 20px auto; height: calc(100vh - 40px);
+                border-radius: 24px; 
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                border: 1px solid rgba(255,255,255,0.4);
+            }
+        }
+
+        /* 覆寫 Tailwind Primary Color - Dynamic */
+        .text-primary { color: var(--theme-color) !important; }
+        .bg-primary { background-color: var(--theme-color) !important; }
+        .border-primary { border-color: var(--theme-color) !important; }
+        .ring-primary { --tw-ring-color: var(--theme-color) !important; }
+        .hover\:text-primary:hover { color: var(--theme-color) !important; }
+        .hover\:bg-primary:hover { background-color: var(--theme-color) !important; }
+
+        /* 輸入框樣式 */
+        input[type="date"] { background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; font-weight: bold; outline: none; padding: 0; cursor: pointer; min-width: 130px; }
+        .weather-date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.8; cursor: pointer; }
+        .normal-date-input::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+
+        /* 拖曳樣式 */
+        .draggable-item { cursor: grab; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); touch-action: none; }
+        .draggable-item:active { cursor: grabbing; transform: scale(0.98); }
+        .drag-over { border: 2px dashed var(--theme-color); background-color: rgba(255,255,255,0.8); opacity: 0.9; transform: scale(1.02); z-index: 10; }
+        
+        /* 極致絲滑玻璃擬態卡片 (iOS Style + GPU Accelerated) */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255,255,255, var(--glass-opacity)), rgba(255,255,255, calc(var(--glass-opacity) - 0.2)));
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+            transform: translateZ(0); 
+            will-change: transform, backdrop-filter;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* 互動效果 */
+        .glass-card-interactive { cursor: pointer; }
+        .glass-card-interactive:hover { 
+            transform: translateY(-2px) scale(1.005); 
+            box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.1); 
+            background: linear-gradient(135deg, rgba(255,255,255, calc(var(--glass-opacity) + 0.15)), rgba(255,255,255, var(--glass-opacity)));
+            border-color: rgba(255,255,255,0.9);
+        }
+        .glass-card-interactive:active { transform: scale(0.98); }
+
+        /* 天氣漸層 */
+        .weather-gradient-sunny { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .weather-gradient-cloudy { background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); }
+        .weather-gradient-rainy { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .weather-gradient-gray { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin-fast { animation: spin 0.8s linear infinite; }
+        
+        /* 顏色選擇器優化 */
+        input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; padding: 0; overflow: hidden; border-radius: 50%; cursor: pointer; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* 備註便利貼顏色 */
+        .note-custom { border-left-width: 4px; border-left-style: solid; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        secondary: '#2F3542',
+                        accent: '#1E90FF',
+                        route: '#3742fa'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-gray-700">
+
+<div id="app" v-cloak class="relative w-full h-full">
+    
+    <!-- Background Layer -->
+    <div class="app-background" :style="{ backgroundImage: appSettings.bgImage ? `url(${appSettings.bgImage})` : 'none', backgroundColor: '#f0f2f5' }" :class="{ 'has-bg-image': appSettings.bgImage }">
+        <div class="app-overlay" :style="overlayStyle"></div>
+    </div>
+    <div class="app-noise"></div>
+
+    <!-- Main Container -->
+    <div class="app-container" :style="cssVars">
+    
+        <!-- 1. Header -->
+        <header class="flex-none glass-card z-30 px-5 py-3 border-b border-white/30 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3 overflow-hidden flex-1">
+                <button @click="showSettingsModal = true" class="text-gray-500 hover:text-primary transition-colors p-2 rounded-full hover:bg-white/30">
+                    <i class="fas fa-sliders-h text-lg"></i>
+                </button>
+
+                <div class="flex-1 overflow-hidden">
+                    <div v-if="isEditingTitle" class="flex items-center">
+                        <input ref="titleInput" v-model="tripTitle" @blur="saveTitle" @keyup.enter="saveTitle" type="text" class="w-full text-lg font-bold text-gray-800 border-b-2 border-primary outline-none bg-transparent">
+                        <button @click="saveTitle" class="ml-2 text-primary"><i class="fas fa-check"></i></button>
+                    </div>
+                    <div v-else @click="editTitle" class="group cursor-pointer">
+                        <h1 class="text-lg font-bold text-gray-800 flex items-center gap-2 truncate group-hover:text-primary transition-colors">
+                            {{ tripTitle }} 
+                            <i class="fas fa-pen text-[10px] text-gray-300 group-hover:text-primary"></i>
+                        </h1>
+                        <p class="text-[10px] text-gray-500">{{ totalDays }} 天行程</p>
+                    </div>
+                </div>
+            </div>
+            <button @click="showDayManager = true" class="flex-none text-xs text-gray-500 hover:text-primary flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl glass-card transition-colors">
+                <i class="fas fa-layer-group text-lg"></i>
+                <span class="scale-90 font-medium">天數</span>
+            </button>
+        </header>
+
+        <!-- 2. Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 scroll-smooth">
+            
+            <!-- Tab 1: Itinerary -->
+            <div v-if="activeTab === 'itinerary'" class="pb-24"> 
+                
+                <!-- Date Selector -->
+                <div class="flex overflow-x-auto gap-3 pb-2 mb-4 hide-scroll select-none items-center">
+                    <div v-for="(day, index) in tripDays" :key="index" @click="currentDayIndex = index"
+                        :class="['flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col justify-center items-center cursor-pointer transition-all border shadow-sm backdrop-blur-md', 
+                                currentDayIndex === index ? 'bg-primary text-white border-primary shadow-lg scale-105' : 'glass-card text-gray-400 border-white/40 hover:bg-white/80']">
+                        <span class="text-[10px] font-medium opacity-80">Day</span>
+                        <span class="text-xl font-bold">{{ index + 1 }}</span>
+                        <div class="flex gap-0.5 mt-1">
+                            <div v-for="n in Math.min(day.items.length, 3)" class="w-1 h-1 rounded-full" :class="currentDayIndex === index ? 'bg-white' : 'bg-gray-300'"></div>
+                        </div>
+                    </div>
+                    <button @click="showDayManager = true" class="flex-shrink-0 w-12 h-20 rounded-2xl flex flex-col justify-center items-center glass-card text-gray-400 border border-dashed border-gray-400 hover:text-primary hover:border-primary hover:bg-white/60">
+                        <i class="fas fa-plus text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Weather Card -->
+                <div :class="['w-full rounded-2xl p-4 text-white shadow-lg mb-2 flex justify-between items-center transition-all relative overflow-hidden', getWeatherClass(currentWeather)]">
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="flex-1 min-w-0 relative z-10"> 
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                            <i class="fas fa-map-marker-alt text-xs opacity-80"></i>
+                            <span class="text-sm font-bold opacity-90">東京</span>
+                            <div class="border-l pl-2 ml-1 border-white/30 flex items-center flex-1">
+                                <input type="date" v-model="tripDays[currentDayIndex].date" @change="onDateChange(currentDayIndex)" class="weather-date-input bg-transparent text-white text-sm focus:outline-none w-full">
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-3">
+                            <span class="text-4xl font-bold">{{ currentWeather.maxTemp }}°</span>
+                            <div class="flex flex-col mb-1">
+                                <span class="text-xs opacity-80">{{ currentWeather.minTemp }}°</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 mt-2">
+                            <p class="text-sm font-medium opacity-90">{{ currentWeather.desc }}</p>
+                            <div v-if="currentWeather.rainProb !== null" class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs">
+                                <i class="fas fa-umbrella text-[10px]"></i>
+                                <span>{{ currentWeather.rainProb }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-5xl opacity-90 pl-2 relative z-10">
+                        <i :class="currentWeather.icon"></i>
+                    </div>
+                </div>
+
+                <!-- Date Header -->
+                <div class="flex items-center justify-between px-2 py-3 mb-1">
+                    <div class="flex items-center gap-2 glass-card px-3 py-1.5 rounded-full shadow-sm">
+                        <span class="text-primary text-xs font-bold px-1 rounded">Day {{ currentDayIndex + 1 }}</span>
+                        <input type="date" v-model="tripDays[currentDayIndex].date" @change="onDateChange(currentDayIndex)" class="normal-date-input text-lg font-bold text-gray-800 bg-transparent focus:outline-none">
+                    </div>
+                    <div class="text-xs text-gray-500 font-medium bg-white/50 px-2 py-1 rounded-lg backdrop-blur-sm">
+                        {{ tripDays[currentDayIndex].items.length }} 個行程
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="space-y-0 relative">
+                    <div v-if="currentItinerary.length === 0" class="text-center py-16 text-gray-400 border-2 border-dashed border-gray-300 rounded-xl glass-card">
+                        <i class="fas fa-map-marked-alt text-5xl mb-3 opacity-20"></i>
+                        <p>本日尚無行程</p>
+                        <button @click="openAddModal" class="mt-4 text-primary text-sm font-bold hover:underline">新增第一個景點</button>
+                    </div>
+
+                    <template v-for="(item, idx) in sortedItinerary" :key="item.id">
+                        
+                        <!-- Itinerary Item -->
+                        <div class="relative pl-6 group z-10">
+                            <div class="absolute left-[11px] top-6 bottom-[-20px] w-0.5 bg-gray-300 group-last:bottom-0"></div>
+                            <div class="absolute left-0 top-5 w-6 h-6 rounded-full bg-white border-4 border-primary z-10 shadow-sm flex items-center justify-center">
+                                <span class="text-[9px] font-bold text-gray-500">{{ idx + 1 }}</span>
+                            </div>
+
+                            <div class="glass-card glass-card-interactive rounded-2xl shadow-sm relative mb-1 overflow-hidden transition-all">
+                                <div class="p-4 pb-2 border-b border-gray-100/50">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1 pr-2">
+                                            <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">{{ item.title }}</h3>
+                                            <div class="flex items-center gap-2 text-xs font-mono">
+                                                <span class="bg-gray-100/80 text-gray-700 px-2 py-0.5 rounded">{{ item.time }}</span>
+                                                <i class="fas fa-arrow-right text-gray-300 text-[10px]"></i>
+                                                <span class="text-gray-400">{{ calculateEndTime(item.time, item.duration) }}</span>
+                                                <span class="text-primary ml-1 font-bold"><i class="fas fa-hourglass-half mr-0.5"></i>{{ item.duration }}m</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <button @click.stop="openMap(item.location)" class="w-8 h-8 rounded-full bg-blue-50/80 text-accent hover:bg-blue-100 flex items-center justify-center transition-colors shadow-sm" title="導航">
+                                                <i class="fas fa-location-arrow text-sm"></i>
+                                            </button>
+                                            <button @click.stop="editItem(item)" class="w-8 h-8 rounded-full bg-gray-50/80 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors">
+                                                <i class="fas fa-pen text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 pt-3">
+                                    <div class="flex items-center gap-2 mb-2 text-sm text-gray-600">
+                                        <i class="fas fa-map-pin text-primary w-4 text-center"></i>
+                                        <span class="truncate font-medium">{{ item.location || '未設定地點' }}</span>
+                                    </div>
+                                    <!-- Customized Note Color -->
+                                    <div v-if="item.note" class="mt-2 relative p-3 pl-4 rounded-lg note-custom text-xs shadow-sm" :style="getNoteStyle(item.noteColor)">
+                                        <i class="fas fa-quote-left absolute top-2 left-1.5 opacity-50 text-[8px]"></i>
+                                        <p class="whitespace-pre-wrap leading-relaxed font-medium">{{ item.note }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gap Navigation -->
+                        <div v-if="idx < sortedItinerary.length - 1" class="relative pl-6 py-3 z-0">
+                            <div class="absolute left-[11px] top-0 bottom-0 w-0.5 border-l-2 border-dotted border-route/50"></div>
+                            <div class="ml-4 glass-card rounded-xl p-3 border-blue-100/50 shadow-sm flex flex-col gap-3 transition-colors hover:bg-white/40">
+                                <div class="flex justify-between items-center border-b border-gray-100/50 pb-2">
+                                    <div class="flex bg-gray-100/50 p-0.5 rounded-lg">
+                                        <button @click="setTransportMode(item, sortedItinerary[idx+1], 'TRANSIT')" :class="['px-3 py-1 rounded-md text-xs font-bold transition-all', (!item.mode || item.mode === 'TRANSIT') ? 'bg-white text-route shadow-sm' : 'text-gray-400']"><i class="fas fa-subway mr-1"></i>大眾</button>
+                                        <button @click="setTransportMode(item, sortedItinerary[idx+1], 'WALKING')" :class="['px-3 py-1 rounded-md text-xs font-bold transition-all', item.mode === 'WALKING' ? 'bg-white text-route shadow-sm' : 'text-gray-400']"><i class="fas fa-walking mr-1"></i>步行</button>
+                                        <button @click="setTransportMode(item, sortedItinerary[idx+1], 'DRIVING')" :class="['px-3 py-1 rounded-md text-xs font-bold transition-all', item.mode === 'DRIVING' ? 'bg-white text-route shadow-sm' : 'text-gray-400']"><i class="fas fa-car mr-1"></i>開車</button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a :href="getGoogleMapsDirectionUrl(item.location, sortedItinerary[idx+1].location, item.mode)" target="_blank" class="flex-1 bg-route text-white text-xs py-2 rounded-lg font-bold text-center hover:bg-blue-700 shadow shadow-blue-200">
+                                        <i class="fas fa-directions mr-1"></i> 查詢路程
+                                    </a>
+                                    <div class="flex items-center bg-gray-50/80 rounded-lg border border-gray-200 px-2 py-1 relative overflow-hidden transition-all gap-1 w-32" :class="{'ring-2 ring-route/30': item.isCalculating}">
+                                        <div v-if="item.isCalculating" class="absolute inset-0 flex items-center justify-center bg-white/90 z-10"><i class="fas fa-spinner animate-spin-fast text-route text-xs"></i></div>
+                                        <div class="relative flex-1">
+                                            <input type="number" min="0" :value="Math.floor((item.commuteTime || 0) / 60)" @input="updateCommuteTime(item, $event.target.value, 'h')" class="w-full bg-transparent text-center text-sm font-bold text-gray-700 outline-none" placeholder="0">
+                                            <span class="absolute right-0 top-0 text-[10px] text-gray-400 leading-6">時</span>
+                                        </div>
+                                        <div class="relative flex-1">
+                                            <input type="number" min="0" :value="(item.commuteTime || 0) % 60" @input="updateCommuteTime(item, $event.target.value, 'm')" class="w-full bg-transparent text-center text-sm font-bold text-gray-700 outline-none" placeholder="0">
+                                            <span class="absolute right-0 top-0 text-[10px] text-gray-400 leading-6">分</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="getGap(item, sortedItinerary[idx+1]) < 0" class="text-xs text-red-500 font-bold flex items-center gap-1 bg-red-50/80 p-1.5 rounded border border-red-100"><i class="fas fa-times-circle"></i> 錯誤：時間重疊</div>
+                                <div v-else class="text-xs text-gray-500 flex items-center gap-1 pl-1"><i class="fas fa-clock"></i> 空檔 {{ getGap(item, sortedItinerary[idx+1]) }} 分</div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Tab 2: Expenses -->
+            <div v-if="activeTab === 'expenses'" class="pb-20">
+                 <div class="bg-gradient-to-br from-gray-800 to-black text-white rounded-2xl p-6 shadow-xl mb-6 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-1">
+                            <p class="text-gray-400 text-xs uppercase tracking-wider">總支出</p>
+                            <select v-model="displayCurrency" class="bg-white/20 border-none text-white text-xs rounded px-2 py-1 outline-none cursor-pointer font-mono font-bold"><option v-for="curr in currencies" :key="curr" :value="curr">{{ curr }}</option></select>
+                        </div>
+                        <h2 class="text-4xl font-bold mb-4 font-mono">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(totalExpenseDisplay).toLocaleString() }}</h2>
+                        <div class="flex justify-between items-center border-t border-gray-700 pt-4">
+                            <span class="text-sm text-gray-300">{{ getExchangeRateText }}</span>
+                            <button @click="showSettlement = true" class="bg-primary hover:opacity-90 px-4 py-1.5 rounded-full text-sm font-bold transition-opacity">結算報表</button>
+                        </div>
+                    </div>
+                </div>
+                 <div class="grid grid-cols-4 gap-3 mb-6">
+                    <button @click="openAddExpenseModal" class="col-span-3 glass-card border-2 border-dashed border-gray-300 text-gray-500 py-3 rounded-xl font-bold hover:border-primary hover:text-primary transition-colors shadow-sm"><i class="fas fa-plus-circle mr-1"></i> 記帳</button>
+                    <button @click="showTravelerModal = true" class="col-span-1 glass-card border border-gray-200 text-gray-500 rounded-xl shadow-sm"><i class="fas fa-users-cog"></i></button>
+                </div>
+                <div class="space-y-3">
+                    <div v-for="(exp, idx) in expenses" :key="idx" class="glass-card p-4 rounded-xl shadow-sm border border-white/50 flex justify-between items-center">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800">{{ exp.title }}</h4>
+                            <div class="text-xs text-gray-400 flex flex-col gap-1">
+                                <div class="flex items-center gap-1"><span class="bg-gray-100 px-1 rounded">{{ exp.payer }}</span><span>付</span><span class="font-bold text-gray-600">{{ getCurrencySymbol(exp.currency) }}{{ Number(exp.amount).toLocaleString() }}</span></div>
+                                <div class="text-[10px] text-gray-400">分攤: {{ getInvolvedText(exp.involved) }}</div>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col items-end gap-1">
+                            <span class="block font-bold text-gray-800 text-sm">≈ {{ getCurrencySymbol(displayCurrency) }}{{ Math.round(convertCurrency(exp.amount, exp.currency, displayCurrency)).toLocaleString() }}</span>
+                            <div class="flex gap-2"><button @click="openEditExpense(exp)" class="text-xs text-gray-400 hover:text-primary"><i class="fas fa-pen"></i></button><button @click="deleteExpense(idx)" class="text-xs text-red-300 hover:text-red-500"><i class="fas fa-trash"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Floating Add Button -->
+        <button v-if="activeTab === 'itinerary'" @click="openAddModal" class="absolute bottom-20 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center text-xl hover:scale-110 transition-transform z-20">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <!-- 3. Footer Navigation -->
+        <nav class="flex-none glass-card border-t border-gray-200/50 flex justify-around py-2 pb-5 sm:pb-2 z-30">
+            <button @click="activeTab = 'itinerary'" :class="['flex flex-col items-center w-full py-1', activeTab === 'itinerary' ? 'text-primary' : 'text-gray-400']"><i class="fas fa-map-marked-alt text-xl mb-1"></i><span class="text-[10px] font-bold">行程</span></button>
+            <button @click="activeTab = 'expenses'" :class="['flex flex-col items-center w-full py-1', activeTab === 'expenses' ? 'text-primary' : 'text-gray-400']"><i class="fas fa-calculator text-xl mb-1"></i><span class="text-[10px] font-bold">分帳</span></button>
+        </nav>
+
+    </div>
+
+    <!-- ================= MODALS ================= -->
+    
+    <!-- Settings Modal (New Features) -->
+    <div v-if="showSettingsModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold mb-4">介面與導航設定</h3>
+            <div class="space-y-6">
+                <!-- Theme Color -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">主題顏色 (Palette)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" v-model="appSettings.themeColor" class="w-10 h-10 rounded-full shadow-sm">
+                        <div class="flex gap-2">
+                            <button v-for="c in presetColors" :key="c" @click="appSettings.themeColor = c" :style="{background: c}" class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-200"></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Google API Key -->
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <label class="block text-xs text-blue-600 mb-1 font-bold">Google Maps API Key (選填)</label>
+                    <input v-model="appSettings.googleApiKey" type="password" class="w-full border rounded-lg p-2 text-xs" placeholder="AIzaSy...">
+                    <p class="text-[10px] text-blue-400 mt-1">若輸入 Key，將啟用 100% 精準的 Google 導航引擎計算時間。若無，系統將使用高精度物理估算。</p>
+                </div>
+
+                <!-- Glassmorphism Controls -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">玻璃擬態效果</label>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span>模糊 (Blur)</span><span>{{ appSettings.glassBlur }}px</span></div>
+                            <input type="range" min="0" max="30" v-model="appSettings.glassBlur" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span>不透明度</span><span>{{ appSettings.cardOpacity }}%</span></div>
+                            <input type="range" min="20" max="100" v-model="appSettings.cardOpacity" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Background Image -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">背景圖片 (支援模糊預覽)</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="file" accept="image/*" @change="handleFileUpload" class="text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-red-600">
+                    </div>
+                    <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
+                        <div @click="appSettings.bgImage = ''" class="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer text-xs text-gray-400 bg-gray-50">無</div>
+                        <img v-for="img in presetBgs" :key="img" :src="img" @click="appSettings.bgImage = img" class="w-12 h-12 flex-shrink-0 rounded-lg object-cover cursor-pointer border-2 hover:border-primary border-transparent">
+                    </div>
+                </div>
+            </div>
+            <button @click="saveSettingsAndReload" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">儲存並應用</button>
+        </div>
+    </div>
+
+    <!-- Day Manager Modal -->
+    <div v-if="showDayManager" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 flex justify-between items-center">管理天數 <button @click="showDayManager = false" class="text-gray-400 w-8 h-8 rounded-full hover:bg-gray-100"><i class="fas fa-times"></i></button></h3>
+            <div class="space-y-3 mb-4">
+                <div v-for="(day, index) in tripDays" :key="index" class="draggable-item flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100 select-none relative" draggable="true" @dragstart="dragStart($event, index)" @dragover.prevent @drop="onDrop($event, index)" @dragenter="draggingIndex = index" @touchstart="touchStart($event, index)" @touchend="touchEnd" :class="{'drag-over': draggingIndex === index}">
+                    <div class="flex items-center gap-3 pointer-events-none"><div class="text-gray-300 px-1"><i class="fas fa-bars"></i></div><div class="flex flex-col"><span class="font-bold text-gray-800 text-sm">Day {{ index + 1 }}</span><span class="text-xs text-gray-500 font-mono">{{ day.date }}</span></div></div>
+                    <div class="flex items-center gap-2"><span class="text-[10px] bg-white px-2 py-1 rounded border text-gray-400">{{ day.items.length }} 景點</span><button @click.stop="deleteDay(index)" class="w-8 h-8 flex items-center justify-center rounded text-red-400 hover:bg-red-50 z-10"><i class="fas fa-trash"></i></button></div>
+                </div>
+            </div>
+            <button @click="addDay" class="w-full py-3 border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 transition-colors"><i class="fas fa-plus mr-2"></i>新增一天</button>
+        </div>
+    </div>
+
+    <!-- Itinerary Edit/Add Modal -->
+    <div v-if="showItineraryModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
+            <div class="space-y-4">
+                <input v-model="form.title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="名稱">
+                <div class="flex gap-2">
+                    <input v-model="form.time" type="time" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary">
+                    <div class="flex items-center gap-1 flex-1">
+                        <div class="relative flex-1"><input v-model.number="tempDurationH" type="number" min="0" class="w-full bg-gray-50 border rounded-xl p-3 pr-6 text-center" placeholder="0"><span class="absolute right-2 top-3.5 text-xs text-gray-400">時</span></div>
+                        <div class="relative flex-1"><input v-model.number="tempDurationM" @blur="validateDuration" type="number" min="0" class="w-full bg-gray-50 border rounded-xl p-3 pr-6 text-center" placeholder="0"><span class="absolute right-2 top-3.5 text-xs text-gray-400">分</span></div>
+                    </div>
+                </div>
+                <input v-model.lazy="form.location" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3" placeholder="地點 (Google Maps)">
+                <div v-if="form.location" class="w-full h-32 rounded-xl bg-gray-100 overflow-hidden border border-gray-200"><iframe width="100%" height="100%" frameborder="0" style="border:0" :src="getMapEmbedUrl(form.location)"></iframe></div>
+                <div><div class="flex justify-between items-center mb-2"><label class="text-xs text-gray-400">備註 & 顏色</label><div class="flex gap-1"><div class="relative"><input type="color" v-model="form.noteColor" class="w-6 h-6 p-0 border-0 rounded-full overflow-hidden shadow-sm" title="自訂顏色"></div></div></div><textarea v-model="form.note" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary mb-2" placeholder="備註..."></textarea></div>
+                <div class="flex gap-3 pt-2"><button v-if="isEditing" @click="deleteItem" class="w-12 bg-red-50 text-red-500 rounded-xl hover:bg-red-100"><i class="fas fa-trash"></i></button><button @click="showItineraryModal = false" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">取消</button><button @click="saveItem" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold">儲存</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for Expenses, Settlements, Travelers (Kept concise) -->
+    <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"><div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-lg font-bold mb-4">{{ isEditingExpense ? '編輯' : '新增' }}記帳</h3><div class="space-y-4"><input v-model="expenseForm.title" class="w-full bg-gray-50 border rounded-xl p-3" placeholder="項目"><div class="flex gap-2"><select v-model="expenseForm.currency" class="bg-gray-50 border rounded-xl p-3 font-bold"><option v-for="c in currencies" :key="c" :value="c">{{ c }}</option></select><input v-model.number="expenseForm.amount" type="number" class="flex-1 bg-gray-50 border rounded-xl p-3 font-bold" placeholder="金額"></div><div v-if="expenseForm.amount && expenseForm.currency !== 'TWD'" class="text-right text-xs text-gray-500">≈ NT$ {{ Math.round(convertCurrency(expenseForm.amount, expenseForm.currency, 'TWD')).toLocaleString() }}</div><div><label class="text-xs text-gray-400 block mb-2">誰先付錢？</label><div class="flex gap-2 flex-wrap"><button v-for="p in travelers" :key="p" @click="expenseForm.payer = p" :class="['px-3 py-1.5 rounded-full text-sm border', expenseForm.payer === p ? 'bg-secondary text-white' : 'bg-white']">{{ p }}</button></div></div><div><label class="text-xs text-gray-400 block mb-2">分攤對象</label><div class="flex gap-2 flex-wrap"><button v-for="p in travelers" :key="'inv_'+p" @click="toggleInvolved(p)" :class="['px-3 py-1.5 rounded-full text-sm border flex items-center gap-1', expenseForm.involved.includes(p) ? 'bg-accent text-white' : 'bg-gray-50 text-gray-400']"><i v-if="expenseForm.involved.includes(p)" class="fas fa-check text-[10px]"></i>{{ p }}</button></div></div><button @click="saveExpense" class="w-full bg-secondary text-white py-3 rounded-xl font-bold mt-2">儲存</button><button @click="showExpenseModal = false" class="w-full text-gray-400 py-2">取消</button></div></div></div>
+    <div v-if="showSettlement" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-6"><h3 class="text-lg font-bold mb-4 text-center">結算建議 ({{ displayCurrency }})</h3><div v-if="settlements.length === 0" class="text-center text-gray-400 py-4">無須結算</div><div v-for="(s, i) in settlements" :key="i" class="flex justify-between bg-gray-50 p-3 rounded border mb-2"><span>{{ s.from }} <i class="fas fa-arrow-right mx-1 text-gray-300"></i> {{ s.to }}</span><span class="font-bold text-primary">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(s.amount).toLocaleString() }}</span></div><p class="text-center text-[10px] text-gray-400 mt-4">註：採一對一互抵結算。</p><button @click="showSettlement = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">關閉</button></div></div>
+    <div v-if="showTravelerModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-6"><h3 class="text-lg font-bold mb-4">旅伴管理</h3><div v-for="(p, idx) in travelers" :key="idx" class="flex justify-between p-2 border-b"><span>{{ p }}</span> <button @click="travelers.splice(idx,1)" v-if="travelers.length>1" class="text-red-400"><i class="fas fa-minus"></i></button></div><div class="flex gap-2 mt-2"><input v-model="newTravelerName" class="flex-1 border rounded px-2 py-1" placeholder="名字"><button @click="addTraveler" class="bg-primary text-white px-3 rounded"><i class="fas fa-plus"></i></button></div><button @click="showTravelerModal = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">完成</button></div></div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+
+    createApp({
+        setup() {
+            // State
+            const activeTab = ref('itinerary');
+            const tripTitle = ref('我的東京之旅');
+            const isEditingTitle = ref(false);
+            const titleInput = ref(null);
+            const tripDays = ref([{ date: new Date().toISOString().split('T')[0], items: [] }]);
+            const currentDayIndex = ref(0);
+            
+            // Settings State
+            const showSettingsModal = ref(false);
+            const appSettings = ref({
+                themeColor: '#FF4757',
+                bgImage: '',
+                glassBlur: 20,
+                cardOpacity: 70,
+                glassSaturation: 180,
+                googleApiKey: '' // New for Real API
+            });
+            const presetColors = ['#FF4757', '#2ED573', '#1E90FF', '#FFA502', '#3742fa', '#2F3542'];
+            const presetBgs = [
+                'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80',
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80',
+                'https://images.unsplash.com/photo-1528360983277-13d9b152c611?w=400&q=80'
+            ];
+
+            const cssVars = computed(() => ({ 
+                '--theme-color': appSettings.value.themeColor,
+                '--glass-blur': `${appSettings.value.glassBlur}px`,
+                '--glass-opacity': appSettings.value.cardOpacity / 100,
+                '--glass-saturation': `${appSettings.value.glassSaturation}%`,
+                '--card-border': `rgba(255, 255, 255, ${Math.max(0.2, (100 - appSettings.value.cardOpacity) / 100)})`
+            }));
+            const overlayStyle = computed(() => ({
+                background: appSettings.value.bgImage ? `linear-gradient(to bottom, rgba(255,255,255,${(100 - appSettings.value.cardOpacity + 20) / 200}), rgba(255,255,255,${(100 - appSettings.value.cardOpacity) / 100}))` : 'transparent'
+            }));
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { appSettings.value.bgImage = e.target.result; };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const getNoteStyle = (hex) => {
+                if(!hex) hex = '#F59E0B'; 
+                const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16);
+                return { backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`, borderLeftColor: hex, color: `rgba(${r}, ${g}, ${b}, 0.9)` };
+            };
+
+            // Drag & Drop
+            const draggingIndex = ref(null);
+            const touchStartIndex = ref(null);
+            const weatherData = ref({}); 
+            const currencies = ['TWD', 'JPY', 'USD', 'KRW', 'CNY', 'EUR', 'GBP', 'HKD', 'THB', 'AUD'];
+            const exchangeRates = ref({ TWD: 1, JPY: 0.21, USD: 32 }); 
+            const displayCurrency = ref('TWD'); 
+
+            const showDayManager = ref(false);
+            const showItineraryModal = ref(false);
+            const isEditing = ref(false);
+            const editingId = ref(null);
+            const form = ref({});
+            const tempDurationH = ref(0);
+            const tempDurationM = ref(0);
+            const travelers = ref(['我', '旅伴A']);
+            const expenses = ref([]);
+            const showExpenseModal = ref(false);
+            const isEditingExpense = ref(false);
+            const editingExpenseId = ref(null);
+            const showTravelerModal = ref(false);
+            const showSettlement = ref(false);
+            const newTravelerName = ref('');
+            const expenseForm = ref({ title: '', amount: '', payer: '我', currency: 'JPY', involved: [] });
+
+            // Logic
+            const fetchWeather = async () => {
+                try {
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`);
+                    weatherData.value = await res.json();
+                } catch(e) {}
+            };
+            const fetchRates = async () => {
+                try {
+                    const res = await fetch('https://api.exchangerate-api.com/v4/latest/TWD');
+                    const data = await res.json();
+                    if(data && data.rates) {
+                        const newRates = { TWD: 1 };
+                        for (const [curr, rate] of Object.entries(data.rates)) newRates[curr] = 1 / rate;
+                        exchangeRates.value = newRates;
+                    }
+                } catch(e) {}
+            };
+
+            const convertCurrency = (amt, from, to) => (amt * (exchangeRates.value[from] || 1)) / (exchangeRates.value[to] || 1);
+            const getCurrencySymbol = (c) => ({ TWD:'NT$', JPY:'¥', USD:'$', KRW:'₩', EUR:'€', GBP:'£', CNY:'¥', HKD:'HK$', THB:'฿', AUD:'A$' }[c] || c);
+            const getExchangeRateText = computed(() => displayCurrency.value === 'TWD' ? '基準: TWD (1:1)' : `1 ${displayCurrency.value} ≈ ${(exchangeRates.value[displayCurrency.value]||0).toFixed(3)} TWD`);
+
+            const currentWeather = computed(() => {
+                const def = { maxTemp: '--', minTemp: '--', rainProb: null, icon: 'fas fa-cloud', desc: '...', code: -1 };
+                if (!weatherData.value.daily) return def;
+                const today = tripDays.value[currentDayIndex.value].date;
+                const idx = weatherData.value.daily.time.findIndex(t => t === today);
+                if (idx === -1) return { maxTemp: '20', minTemp: '15', rainProb: null, icon: 'fas fa-city', desc: '東京平均', code: 999 };
+                const code = weatherData.value.daily.weathercode[idx];
+                const max = Math.round(weatherData.value.daily.temperature_2m_max[idx]);
+                const min = Math.round(weatherData.value.daily.temperature_2m_min[idx]);
+                const rain = weatherData.value.daily.precipitation_probability_max ? weatherData.value.daily.precipitation_probability_max[idx] : null;
+                let icon = 'fas fa-sun'; let desc = '晴朗';
+                if (code <= 1) { icon = 'fas fa-sun'; desc = '晴朗'; } else if (code <= 3) { icon = 'fas fa-cloud-sun'; desc = '多雲'; } else if (code <= 82) { icon = 'fas fa-cloud-rain'; desc = '有雨'; }
+                return { maxTemp: max, minTemp: min, rainProb: rain, icon, desc, code };
+            });
+            const getWeatherClass = (w) => (w.code <= 1 || w.code === 999) ? 'weather-gradient-sunny' : (w.code <= 3 ? 'weather-gradient-cloudy' : 'weather-gradient-rainy');
+
+            // Google Maps Loader
+            const loadGoogleMapsScript = (key) => {
+                if(!key || window.google) return;
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            };
+
+            onMounted(() => {
+                const saved = localStorage.getItem('tokyoTripFinalProPlusMaxPlus2');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    tripDays.value = data.tripDays; tripTitle.value = data.tripTitle; travelers.value = data.travelers; expenses.value = data.expenses;
+                    if(data.appSettings) {
+                        appSettings.value = data.appSettings;
+                        // Init Google Maps if Key present
+                        if(appSettings.value.googleApiKey) loadGoogleMapsScript(appSettings.value.googleApiKey);
+                    }
+                }
+                fetchWeather(); fetchRates();
+            });
+            
+            const saveSettingsAndReload = () => {
+                saveData();
+                location.reload(); // Reload to apply API Key
+            };
+
+            const saveData = () => { localStorage.setItem('tokyoTripFinalProPlusMaxPlus2', JSON.stringify({ tripDays: tripDays.value, tripTitle: tripTitle.value, travelers: travelers.value, expenses: expenses.value, appSettings: appSettings.value })); };
+            watch([tripDays, tripTitle, travelers, expenses], saveData, { deep: true });
+
+            const editTitle = () => { isEditingTitle.value = true; nextTick(() => titleInput.value.focus()); };
+            const saveTitle = () => { isEditingTitle.value = false; saveData(); };
+            const totalDays = computed(() => tripDays.value.length);
+            const addDay = () => { const last = tripDays.value[tripDays.value.length - 1]; const d = new Date(last ? last.date : new Date()); d.setDate(d.getDate() + 1); tripDays.value.push({ date: d.toISOString().split('T')[0], items: [] }); fetchWeather(); };
+            const deleteDay = (i) => { if(tripDays.value.length > 1 && confirm('刪除此日？')) { tripDays.value.splice(i, 1); if(currentDayIndex.value>=tripDays.value.length) currentDayIndex.value--; fetchWeather(); } };
+            
+            const swapDays = (idx1, idx2) => { if(idx1===idx2) return; const t = tripDays.value[idx1].items; tripDays.value[idx1].items = tripDays.value[idx2].items; tripDays.value[idx2].items = t; };
+            const dragStart = (e, i) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); draggingIndex.value = i; };
+            const onDrop = (e, i) => { swapDays(parseInt(e.dataTransfer.getData('text/plain')), i); draggingIndex.value = null; };
+            const touchStart = (e, i) => { touchStartIndex.value = i; draggingIndex.value = i; };
+            const touchEnd = (e) => {
+                const el = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                if(el) { const w = el.closest('.draggable-item'); if(w) { const idx = Array.from(document.querySelectorAll('.draggable-item')).indexOf(w); if(idx !== -1 && touchStartIndex.value !== null) swapDays(touchStartIndex.value, idx); } }
+                draggingIndex.value = null; touchStartIndex.value = null;
+            };
+            const onDateChange = (i) => { const base = new Date(tripDays.value[i].date); for(let j=i+1; j<tripDays.value.length; j++){ const n = new Date(base); n.setDate(base.getDate()+(j-i)); tripDays.value[j].date = n.toISOString().split('T')[0]; } fetchWeather(); saveData(); };
+
+            const currentItinerary = computed(() => tripDays.value[currentDayIndex.value]?.items || []);
+            const sortedItinerary = computed(() => [...currentItinerary.value].sort((a, b) => a.time.localeCompare(b.time)));
+
+            const openAddModal = () => { isEditing.value = false; form.value = { title: '', time: '09:00', duration: 60, location: '', note: '', noteColor: '#F59E0B', mode: 'TRANSIT', commuteTime: null, id: Date.now() }; tempDurationH.value = 1; tempDurationM.value = 0; showItineraryModal.value = true; };
+            const editItem = (item) => { isEditing.value = true; editingId.value = item.id; form.value = { ...item }; tempDurationH.value = Math.floor(item.duration/60); tempDurationM.value = item.duration%60; showItineraryModal.value = true; };
+            const validateDuration = () => { if(tempDurationM.value >= 60) { tempDurationH.value += Math.floor(tempDurationM.value/60); tempDurationM.value %= 60; } };
+            const saveItem = () => {
+                validateDuration(); form.value.duration = (tempDurationH.value||0)*60 + (tempDurationM.value||0);
+                const list = tripDays.value[currentDayIndex.value].items;
+                if(isEditing.value) { const i = list.findIndex(x => x.id === editingId.value); if(i!==-1) list[i] = { ...form.value }; } else list.push({ ...form.value, id: Date.now() });
+                showItineraryModal.value = false;
+            };
+            const deleteItem = () => { const list = tripDays.value[currentDayIndex.value].items; const i = list.findIndex(x => x.id === editingId.value); if(i!==-1) list.splice(i, 1); showItineraryModal.value = false; };
+            const calculateEndTime = (start, dur) => { if (!start) return ''; const [h, m] = start.split(':').map(Number); const d = new Date(); d.setHours(h, m + parseInt(dur)); return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
+            
+            // --- UPDATED Navigation: Google Maps Logic ---
+            const getGoogleTravelTime = (origin, destination, mode) => {
+                return new Promise((resolve, reject) => {
+                    if(!window.google) return reject('Google API not loaded');
+                    const service = new google.maps.DirectionsService();
+                    service.route({
+                        origin: origin,
+                        destination: destination,
+                        travelMode: google.maps.TravelMode[mode], // DRIVING, WALKING, TRANSIT
+                        unitSystem: google.maps.UnitSystem.METRIC
+                    }, (result, status) => {
+                        if (status === 'OK') {
+                            const durationSec = result.routes[0].legs[0].duration.value;
+                            resolve(Math.ceil(durationSec / 60)); // Minutes
+                        } else {
+                            reject(status);
+                        }
+                    });
+                });
+            };
+
+            // Fallback Logic (Improved Haversine)
+            const getCoords = async (query) => {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' Tokyo')}&limit=1`;
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+                } catch(e) {}
+                return null;
+            };
+            const getDistance = (lat1, lon1, lat2, lon2) => {
+                const R = 6371; const dLat = (lat2-lat1) * Math.PI/180; const dLon = (lon2-lon1) * Math.PI/180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            };
+
+            const setTransportMode = async (item, nextItem, mode) => { 
+                item.mode = mode; item.isCalculating = true; 
+                let calculatedTime = null;
+
+                // 1. Try Google Maps SDK (If Key Exists)
+                if (window.google && appSettings.value.googleApiKey) {
+                    try {
+                        calculatedTime = await getGoogleTravelTime(item.location, nextItem.location, mode);
+                    } catch(e) { console.error("Google Nav Error", e); }
+                }
+
+                // 2. Fallback to Haversine/Estimations
+                if (calculatedTime === null && item.location && nextItem.location) {
+                    const c1 = await getCoords(item.location);
+                    const c2 = await getCoords(nextItem.location);
+                    if(c1 && c2) {
+                        const dist = getDistance(c1[1], c1[0], c2[1], c2[0]);
+                        let speed = 25; // km/h driving
+                        if(mode === 'WALKING') speed = 4.5;
+                        if(mode === 'TRANSIT') speed = 30;
+                        calculatedTime = Math.ceil((dist / speed) * 60);
+                        if(mode === 'TRANSIT') calculatedTime += 15; // Buffer
+                    }
+                }
+
+                // 3. Last Resort Random (Rare)
+                if (calculatedTime === null) calculatedTime = 30;
+
+                item.commuteTime = calculatedTime; 
+                item.isCalculating = false; 
+                saveData();
+            };
+            
+            const updateCommuteTime = (item, val, type) => {
+                let h = Math.floor((item.commuteTime||0)/60); let m = (item.commuteTime||0)%60;
+                if(type==='h') h=parseInt(val)||0; if(type==='m') m=parseInt(val)||0;
+                if(m>=60) { h+=Math.floor(m/60); m%=60; }
+                item.commuteTime = h*60+m; saveData();
+            };
+            const getGap = (curr, next) => { if (!curr || !next) return 0; const end = getMinutes(curr.time) + parseInt(curr.duration); const start = getMinutes(next.time); let gap = start - end; if(curr.commuteTime) gap -= parseInt(curr.commuteTime); return gap; };
+            const getMinutes = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+            const getGoogleMapsDirectionUrl = (o, d, m) => { if(!o || !d) return '#'; return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&travelmode=${m.toLowerCase()||'transit'}`; };
+            const openMap = (l) => { if(!l)return; window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l)}`, '_blank'); };
+            const getMapEmbedUrl = (l) => `https://maps.google.com/maps?q=${encodeURIComponent(l)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+            const openAddExpenseModal = () => { isEditingExpense.value = false; expenseForm.value = { title: '', amount: '', payer: '我', currency: 'JPY', involved: [...travelers.value], id: Date.now() }; showExpenseModal.value = true; };
+            const openEditExpense = (e) => { isEditingExpense.value = true; editingExpenseId.value = e.id; expenseForm.value = JSON.parse(JSON.stringify(e)); if(!expenseForm.value.involved) expenseForm.value.involved = [...travelers.value]; showExpenseModal.value = true; };
+            const toggleInvolved = (p) => { const i = expenseForm.value.involved.indexOf(p); if(i>-1) expenseForm.value.involved.splice(i,1); else expenseForm.value.involved.push(p); };
+            const getInvolvedText = (i) => (!i||i.length===travelers.value.length)?'全員':i.join(', ');
+            const totalExpenseDisplay = computed(() => expenses.value.reduce((s, i) => s + convertCurrency(i.amount, i.currency, displayCurrency.value), 0));
+            const saveExpense = () => { if(expenseForm.value.title && expenseForm.value.amount && expenseForm.value.involved.length>0) { if(isEditingExpense.value) { const i = expenses.value.findIndex(e=>e.id===editingExpenseId.value); if(i!==-1) expenses.value[i] = { ...expenseForm.value }; } else { expenses.value.push({ ...expenseForm.value, id: Date.now() }); } showExpenseModal.value = false; } else alert("請填寫完整"); };
+            const deleteExpense = (i) => expenses.value.splice(i, 1);
+            const addTraveler = () => { if(newTravelerName.value) travelers.value.push(newTravelerName.value); newTravelerName.value=''; };
+            
+            const settlements = computed(() => {
+                let debts = {}; travelers.value.forEach(p => { debts[p] = {}; travelers.value.forEach(o => { if(p!==o) debts[p][o] = 0; }); });
+                expenses.value.forEach(e => {
+                    const amt = convertCurrency(e.amount, e.currency, displayCurrency.value);
+                    const inv = (e.involved && e.involved.length>0) ? e.involved : [];
+                    if(inv.length>0) {
+                        const split = amt/inv.length;
+                        inv.forEach(p => { if(p!==e.payer) { if(!debts[p][e.payer]) debts[p][e.payer]=0; debts[p][e.payer]+=split; } });
+                    }
+                });
+                let res = []; let processed = new Set();
+                travelers.value.forEach(p1 => {
+                    travelers.value.forEach(p2 => {
+                        if(p1===p2) return;
+                        const key = [p1,p2].sort().join('-');
+                        if(processed.has(key)) return;
+                        processed.add(key);
+                        const a = (debts[p1]&&debts[p1][p2])||0; const b = (debts[p2]&&debts[p2][p1])||0;
+                        if(a>b) { const d=a-b; if(d>0.1) res.push({from:p1, to:p2, amount:d}); }
+                        else if(b>a) { const d=b-a; if(d>0.1) res.push({from:p2, to:p1, amount:d}); }
+                    });
+                });
+                return res;
+            });
+
+            return {
+                activeTab, tripTitle, isEditingTitle, editTitle, saveTitle, titleInput, tripDays, currentDayIndex, totalDays, addDay, deleteDay, showDayManager,
+                currentItinerary, sortedItinerary, showItineraryModal, isEditing, form, openAddModal, editItem, saveItem, deleteItem, openMap, getMapEmbedUrl,
+                calculateEndTime, getGap, getGoogleMapsDirectionUrl, setTransportMode, updateCommuteTime, travelers, expenses, totalExpenseDisplay, showExpenseModal, showTravelerModal, showSettlement,
+                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements, currentWeather, getWeatherClass, onDateChange,
+                dragStart, onDrop, draggingIndex, touchStart, touchEnd, exchangeRates, convertCurrency, getCurrencySymbol, displayCurrency, getExchangeRateText,
+                openAddExpenseModal, openEditExpense, toggleInvolved, getInvolvedText, isEditingExpense, currencies, tempDurationH, tempDurationM, validateDuration,
+                showSettingsModal, appSettings, presetColors, presetBgs, cssVars, getNoteStyle, overlayStyle, handleFileUpload, saveSettingsAndReload
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
