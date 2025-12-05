@@ -1157,11 +1157,11 @@
 
             // === Pull to Refresh (Optimized) ===
             const handleTouchStart = (e) => {
-                if (e.target.closest('.overflow-x-auto') || e.target.closest('.day-selector-container')) return;
-                
-                const main = document.querySelector('.main-content');
-                if (main && main.scrollTop > 0) return;
+                // 1. 僅允許在 Header 區域觸發 (Only allow trigger in Header)
+                // 這樣可以避免下方的功能頁面(Itinerary, Expenses等)誤觸
+                if (!e.target.closest('.header-section')) return;
 
+                // 2. 確保沒有在滾動狀態 (Ensure not scrolling)
                 if (window.scrollY === 0) {
                     startY.value = e.touches[0].clientY;
                     isPulling.value = true;
