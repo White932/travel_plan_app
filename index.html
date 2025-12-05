@@ -136,13 +136,16 @@
             backdrop-filter: blur(10px);
         }
         
+        /* === 主內容捲動優化 (Main Content Scroll Optimization) === */
         .main-content {
             flex: 1;
             overflow-y: auto;
+            /* 開啟 iOS 原生慣性捲動 */
             -webkit-overflow-scrolling: touch; 
             padding: 1.5rem 1rem 6rem 1rem; 
             z-index: 10;
             overscroll-behavior-y: contain;
+            /* 確保滑動事件能正確傳遞 */
             touch-action: pan-y; 
         }
 
@@ -179,7 +182,8 @@
         .shop-card.bought .shop-bought-mask { opacity: 1; }
         .shop-card.bought .shop-img { filter: grayscale(100%); }
 
-        /* Animation */
+        /* === 列表動畫優化 (Refined Animations - Delicate & Smooth) === */
+        /* 使用更平滑、細膩的貝茲曲線，動態更美 */
         .list-move {
             transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
@@ -211,20 +215,26 @@
             100% { transform: scale(1.03) rotate(2deg); box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
         }
 
+        /* === 天數選擇器優化 (Day Selector Optimization) === */
         .day-selector-container {
             display: flex;
-            overflow-x: auto;
+            overflow-x: auto; /* 啟用原生橫向捲動 */
             gap: 0.75rem;
             padding-bottom: 0.5rem;
             margin-bottom: 1rem;
+            /* 關鍵：啟用 iOS 慣性捲動，隨時可滑 */
             -webkit-overflow-scrolling: touch; 
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            touch-action: pan-x;
+            scrollbar-width: none; /* Firefox 隱藏捲軸 */
+            -ms-overflow-style: none; /* IE/Edge 隱藏捲軸 */
+            touch-action: pan-x; /* 告訴瀏覽器這裡主要處理橫向滑動 */
             cursor: grab;
         }
-        .day-selector-container::-webkit-scrollbar { display: none; }
-        .day-selector-container:active { cursor: grabbing; }
+        .day-selector-container::-webkit-scrollbar { 
+            display: none; /* Chrome/Safari 隱藏捲軸 */
+        }
+        .day-selector-container:active {
+            cursor: grabbing;
+        }
         
         .gap-nav-hidden { opacity: 0; pointer-events: none; height: 0; margin: 0; overflow: hidden; transition: all 0.2s; }
         
@@ -238,11 +248,9 @@
             max-width: 100px; opacity: 1; margin-left: 6px;
         }
 
+        /* Scroll Safe Areas - Ensure these allow vertical scrolling */
         .card-scroll-safe { touch-action: pan-y !important; cursor: default; }
         .timeline-left-area { touch-action: pan-y !important; }
-
-        .modal-overlay { overscroll-behavior: contain; touch-action: none; }
-        .modal-content { overscroll-behavior: contain; touch-action: pan-y; }
 
     </style>
     <script>
@@ -331,7 +339,8 @@
             <!-- Tab 1: Itinerary -->
             <div v-if="activeTab === 'itinerary'"> 
                 
-                <!-- Date Selector -->
+                <!-- Date Selector (Native Scrolling Enabled) -->
+                <!-- 使用 @click.capture 確保點擊事件能觸發，同時保留原生滑動 -->
                 <div class="day-selector-container hide-scroll select-none items-center px-1">
                     <div v-for="(day, index) in tripDays" :key="index" @click="currentDayIndex = index"
                         :class="['flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col justify-center items-center cursor-pointer transition-all border shadow-sm backdrop-blur-md pointer-events-auto snap-center', 
@@ -417,22 +426,26 @@
                         <button @click="openAddModal" class="mt-4 text-primary text-sm font-bold hover:underline">新增第一個景點</button>
                     </div>
 
-                    <!-- Draggable List -->
+                    <!-- Draggable List (Transition Group) -->
                     <transition-group name="list" tag="div">
                         <div v-for="(item, idx) in currentItinerary" :key="item.id" 
                              class="relative pl-0 group z-10 draggable-item-container select-none touch-none"
                              :class="{ 'is-being-dragged': dragState.isDragging && dragState.dragIndex === idx }">
                              
                             <div class="flex gap-3">
+                                <!-- Number Circle -->
                                 <div class="flex-none w-12 flex flex-col items-center timeline-left-area">
                                     <div class="w-8 h-8 rounded-full bg-white border-4 border-primary z-10 shadow-sm flex items-center justify-center mt-4 transition-transform duration-300">
                                         <span class="text-[10px] font-bold text-gray-700">{{ idx + 1 }}</span>
                                     </div>
+                                    <!-- Vertical Line -->
                                     <div v-if="idx < currentItinerary.length - 1" class="flex-1 w-0.5 bg-gray-200 my-1"></div>
                                 </div>
 
+                                <!-- Card -->
                                 <div class="flex-1 glass-card card-scroll-safe rounded-2xl shadow-sm relative overflow-hidden mb-2">
                                     <div class="p-3 border-b border-gray-100/50 flex gap-2">
+                                        <!-- Custom Drag Handle -->
                                         <div class="flex flex-col justify-center items-center text-gray-300 px-1 border-r border-gray-100 mr-1 cursor-grab active:cursor-grabbing touch-none"
                                              @touchstart.prevent="startItemDrag($event, idx, item)"
                                              @mousedown.prevent="startItemDrag($event, idx, item)">
@@ -486,6 +499,7 @@
                                                 <button @click="setTransportMode(item, currentItinerary[idx+1], 'TRANSIT')" :class="['w-7 h-7 rounded-full flex items-center justify-center text-[10px] transition-all', (!item.mode || item.mode === 'TRANSIT') ? 'bg-blue-100 text-route font-bold shadow-inner' : 'text-gray-400 hover:bg-gray-100']"><i class="fas fa-subway"></i></button>
                                                 <button @click="setTransportMode(item, currentItinerary[idx+1], 'DRIVING')" :class="['w-7 h-7 rounded-full flex items-center justify-center text-[10px] transition-all', item.mode === 'DRIVING' ? 'bg-blue-100 text-route font-bold shadow-inner' : 'text-gray-400 hover:bg-gray-100']"><i class="fas fa-car"></i></button>
                                             </div>
+                                            
                                             <div class="flex items-center gap-1 mr-2">
                                                 <i v-if="item.isCalculating" class="fas fa-spinner animate-spin text-[10px] text-route mr-1"></i>
                                                 <div class="relative">
@@ -498,12 +512,13 @@
                                                     <span class="text-[10px] text-gray-400 absolute -right-3 top-0.5">m</span>
                                                 </div>
                                             </div>
+
                                             <a :href="getGoogleMapsDirectionUrl(item.location, currentItinerary[idx+1].location, item.mode)" target="_blank" class="w-7 h-7 rounded-full bg-route text-white flex items-center justify-center hover:bg-blue-700 shadow-sm ml-2" title="Google 導航">
                                                 <i class="fas fa-location-arrow text-[10px]"></i>
                                             </a>
                                         </div>
                                         <div v-if="checkOverlap(item, currentItinerary[idx+1])" class="text-[10px] text-red-500 font-bold ml-1 animate-pulse">
-                                            ⚠️ 時間重疊
+                                           ⚠️ 時間重疊
                                         </div>
                                     </div>
                                 </div>
@@ -513,7 +528,7 @@
                 </div>
             </div>
 
-            <!-- Ghost Card (Itinerary) -->
+            <!-- Ghost Card (Drag時顯示) -->
             <div v-if="dragState.isDragging && dragState.item" 
                  class="ghost-card-container" 
                  :style="{ top: dragState.y + 'px', left: dragState.x + 'px' }">
@@ -536,28 +551,8 @@
                 </div>
             </div>
 
-            <!-- Ghost Card (Day Manager - Dynamic) -->
-            <div v-if="dayDragState.isDragging" 
-                 class="ghost-card-container" 
-                 :style="{ top: dayDragState.y + 'px', left: dayDragState.x + 'px', width: dayDragState.width + 'px' }">
-                <div class="flex items-center justify-between bg-white/95 backdrop-blur-sm p-3 rounded-xl border-2 border-primary/50 shadow-2xl relative">
-                    <div class="flex items-center gap-3 pointer-events-none">
-                        <div class="text-primary px-1"><i class="fas fa-bars"></i></div>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-gray-800 text-sm">Day {{ dayDragState.index + 1 }}</span>
-                            <span class="text-xs text-gray-500 font-mono">{{ tripDays[dayDragState.index].date }}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 opacity-50">
-                         <span class="text-[10px] bg-white px-2 py-1 rounded border text-gray-400">{{ tripDays[dayDragState.index].items.length }} 景點</span>
-                         <div class="w-8 h-8 flex items-center justify-center rounded text-red-300"><i class="fas fa-trash"></i></div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Tab 2: Expenses -->
             <div v-if="activeTab === 'expenses'">
-                 <!-- Content omitted for brevity, layout same as before -->
                  <div class="bg-gradient-to-br from-gray-800 to-black text-white rounded-2xl p-6 shadow-xl mb-6 relative overflow-hidden card-scroll-safe">
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-1">
@@ -637,7 +632,7 @@
                 </div>
             </div>
 
-            <!-- Tab 4: Information -->
+            <!-- Tab 4: Information (Updated with card-scroll-safe) -->
             <div v-if="activeTab === 'info'" class="space-y-6 card-scroll-safe">
                 <!-- Flight Info -->
                 <section>
@@ -753,14 +748,13 @@
 
     </div>
 
-    <!-- ================= MODALS ================= -->
+    <!-- ================= MODALS (Keep existing) ================= -->
     
     <!-- Settings Modal -->
-    <div v-if="showSettingsModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 modal-overlay" @touchmove.stop>
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-content" @touchmove.stop>
+    <div v-if="showSettingsModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
             <h3 class="text-lg font-bold mb-4">介面與導航設定</h3>
             <div class="space-y-6">
-                <!-- Settings Content ... -->
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">主題顏色 (Palette)</label>
                     <div class="flex items-center gap-3">
@@ -770,46 +764,46 @@
                         </div>
                     </div>
                 </div>
-                <!-- ... other settings ... -->
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">玻璃擬態效果</label>
+                    <div class="space-y-3">
+                        <div><div class="flex justify-between text-xs mb-1"><span>模糊 (Blur)</span><span>{{ appSettings.glassBlur }}px</span></div><input type="range" min="0" max="30" v-model="appSettings.glassBlur" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div>
+                        <div><div class="flex justify-between text-xs mb-1"><span>不透明度</span><span>{{ appSettings.cardOpacity }}%</span></div><input type="range" min="20" max="100" v-model="appSettings.cardOpacity" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">背景圖片 (支援模糊預覽)</label>
+                    <div class="flex gap-2 mb-2"><input type="file" accept="image/*" @change="handleFileUpload" class="text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-red-600"></div>
+                    <div class="flex gap-2 mt-2 overflow-x-auto pb-1">
+                        <div @click="appSettings.bgImage = ''" class="w-12 h-12 flex-shrink-0 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer text-xs text-gray-400 bg-gray-50">無</div>
+                        <img v-for="img in presetBgs" :key="img" :src="img" @click="appSettings.bgImage = img" class="w-12 h-12 flex-shrink-0 rounded-lg object-cover cursor-pointer border-2 hover:border-primary border-transparent">
+                    </div>
+                </div>
             </div>
             <button @click="saveSettingsAndReload" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">儲存並應用</button>
-            <button @click="showSettingsModal = false" class="w-full text-gray-400 mt-2 py-2 text-sm">取消</button>
         </div>
     </div>
 
-    <!-- Day Manager Modal (Dynamic Sorting Enabled) -->
-    <div v-if="showDayManager" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 modal-overlay" @touchmove.stop>
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto modal-content" @touchmove.stop>
+    <!-- Day Manager Modal -->
+    <div v-if="showDayManager" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4 flex justify-between items-center">管理天數 <button @click="showDayManager = false" class="text-gray-400 w-8 h-8 rounded-full hover:bg-gray-100"><i class="fas fa-times"></i></button></h3>
-            <div class="space-y-3 mb-4" ref="dayManagerList">
-                <transition-group name="list" tag="div">
-                    <div v-for="(day, index) in tripDays" :key="day.date + index" 
-                         class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100 select-none relative draggable-item-container"
-                         :class="{ 'is-being-dragged': dayDragState.isDragging && dayDragState.index === index }">
-                        <div class="flex items-center gap-3 w-full"
-                             @touchstart.prevent="startDayManagerDrag($event, index)"
-                             @mousedown.prevent="startDayManagerDrag($event, index)">
-                            <div class="text-gray-300 px-1 cursor-grab"><i class="fas fa-bars"></i></div>
-                            <div class="flex flex-col flex-1">
-                                <span class="font-bold text-gray-800 text-sm">Day {{ index + 1 }}</span>
-                                <span class="text-xs text-gray-500 font-mono">{{ day.date }}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2"><span class="text-[10px] bg-white px-2 py-1 rounded border text-gray-400">{{ day.items.length }} 景點</span><button @click.stop="deleteDay(index)" class="w-8 h-8 flex items-center justify-center rounded text-red-400 hover:bg-red-50 z-10"><i class="fas fa-trash"></i></button></div>
-                    </div>
-                </transition-group>
+            <div class="space-y-3 mb-4">
+                <div v-for="(day, index) in tripDays" :key="index" class="draggable-item flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100 select-none relative" draggable="true" @dragstart="dragStart($event, index)" @dragover.prevent @drop="onDrop($event, index)" @dragenter="draggingIndex = index" @touchstart="touchStart($event, index)" @touchend="touchEnd" :class="{'drag-over': draggingIndex === index}">
+                    <div class="flex items-center gap-3 pointer-events-none"><div class="text-gray-300 px-1"><i class="fas fa-bars"></i></div><div class="flex flex-col"><span class="font-bold text-gray-800 text-sm">Day {{ index + 1 }}</span><span class="text-xs text-gray-500 font-mono">{{ day.date }}</span></div></div>
+                    <div class="flex items-center gap-2"><span class="text-[10px] bg-white px-2 py-1 rounded border text-gray-400">{{ day.items.length }} 景點</span><button @click.stop="deleteDay(index)" class="w-8 h-8 flex items-center justify-center rounded text-red-400 hover:bg-red-50 z-10"><i class="fas fa-trash"></i></button></div>
+                </div>
             </div>
             <button @click="addDay" class="w-full py-3 border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 transition-colors"><i class="fas fa-plus mr-2"></i>新增一天</button>
         </div>
     </div>
 
     <!-- Itinerary Edit/Add Modal -->
-    <div v-if="showItineraryModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-overlay" @touchmove.stop>
-        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto modal-content" @touchmove.stop>
+    <div v-if="showItineraryModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
             <div class="space-y-4">
                 <input v-model="form.title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="名稱">
-                <!-- ... Form Fields ... -->
                 <div class="flex gap-2">
                     <input v-model="form.time" type="time" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary">
                     <div class="flex items-center gap-1 flex-1">
@@ -820,17 +814,15 @@
                 <input v-model.lazy="form.location" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3" placeholder="地點 (Google Maps)">
                 <div v-if="form.location" class="w-full h-32 rounded-xl bg-gray-100 overflow-hidden border border-gray-200"><iframe width="100%" height="100%" frameborder="0" style="border:0" :src="getMapEmbedUrl(form.location)"></iframe></div>
                 <div><div class="flex justify-between items-center mb-2"><label class="text-xs text-gray-400">備註 & 顏色</label><div class="flex gap-1"><div class="relative"><input type="color" v-model="form.noteColor" class="w-6 h-6 p-0 border-0 rounded-full overflow-hidden shadow-sm" title="自訂顏色"></div></div></div><textarea v-model="form.note" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary mb-2" placeholder="備註..."></textarea></div>
-                
                 <div class="flex gap-3 pt-2"><button v-if="isEditing" @click="deleteItem" class="w-12 bg-red-50 text-red-500 rounded-xl hover:bg-red-100"><i class="fas fa-trash"></i></button><button @click="showItineraryModal = false" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">取消</button><button @click="saveItem" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold">儲存</button></div>
             </div>
         </div>
     </div>
 
     <!-- Expense Modal -->
-    <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-overlay" @touchmove.stop>
-        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto modal-content" @touchmove.stop>
+    <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4">{{ isEditingExpense ? '編輯' : '新增' }}記帳</h3>
-            <!-- Expense Form ... -->
             <div class="space-y-3">
                 <div class="flex gap-2">
                     <select v-model="expenseForm.category" class="bg-gray-50 border rounded-xl p-3 text-sm flex-1"><option value="food">🍽️ 飲食</option><option value="transport">🚆 交通</option><option value="stay">🏨 住宿</option><option value="ticket">🎫 門票</option><option value="shopping">🛍️ 購物</option><option value="other">📝 其他</option></select>
@@ -850,8 +842,8 @@
     </div>
 
     <!-- Shopping Item Modal -->
-    <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 modal-overlay" @touchmove.stop>
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-content" @touchmove.stop>
+    <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
             <h3 class="text-lg font-bold mb-4">{{ isEditingShopping ? '編輯商品' : '新增商品' }}</h3>
             <div class="space-y-4">
                 <input v-model="shoppingForm.name" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="商品名稱">
@@ -867,8 +859,8 @@
     </div>
 
     <!-- Settlement & Travelers Modals -->
-    <div v-if="showSettlement" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 modal-overlay" @touchmove.stop><div class="bg-white w-full max-w-sm rounded-2xl p-6 modal-content" @touchmove.stop><h3 class="text-lg font-bold mb-4 text-center">結算建議 ({{ displayCurrency }})</h3><div v-if="settlements.length === 0" class="text-center text-gray-400 py-4">無須結算</div><div v-for="(s, i) in settlements" :key="i" class="flex justify-between bg-gray-50 p-3 rounded border mb-2"><span>{{ s.from }} <i class="fas fa-arrow-right mx-1 text-gray-300"></i> {{ s.to }}</span><span class="font-bold text-primary">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(s.amount).toLocaleString() }}</span></div><button @click="showSettlement = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">關閉</button></div></div>
-    <div v-if="showTravelerModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 modal-overlay" @touchmove.stop><div class="bg-white w-full max-w-sm rounded-2xl p-6 modal-content" @touchmove.stop><h3 class="text-lg font-bold mb-4">旅伴管理</h3><div v-for="(p, idx) in travelers" :key="idx" class="flex justify-between p-2 border-b"><span>{{ p }}</span> <button @click="travelers.splice(idx,1)" v-if="travelers.length>1" class="text-red-400"><i class="fas fa-minus"></i></button></div><div class="flex gap-2 mt-2"><input v-model="newTravelerName" class="flex-1 border rounded px-2 py-1" placeholder="名字"><button @click="addTraveler" class="bg-primary text-white px-3 rounded"><i class="fas fa-plus"></i></button></div><button @click="showTravelerModal = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">完成</button></div></div>
+    <div v-if="showSettlement" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-6"><h3 class="text-lg font-bold mb-4 text-center">結算建議 ({{ displayCurrency }})</h3><div v-if="settlements.length === 0" class="text-center text-gray-400 py-4">無須結算</div><div v-for="(s, i) in settlements" :key="i" class="flex justify-between bg-gray-50 p-3 rounded border mb-2"><span>{{ s.from }} <i class="fas fa-arrow-right mx-1 text-gray-300"></i> {{ s.to }}</span><span class="font-bold text-primary">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(s.amount).toLocaleString() }}</span></div><button @click="showSettlement = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">關閉</button></div></div>
+    <div v-if="showTravelerModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"><div class="bg-white w-full max-w-sm rounded-2xl p-6"><h3 class="text-lg font-bold mb-4">旅伴管理</h3><div v-for="(p, idx) in travelers" :key="idx" class="flex justify-between p-2 border-b"><span>{{ p }}</span> <button @click="travelers.splice(idx,1)" v-if="travelers.length>1" class="text-red-400"><i class="fas fa-minus"></i></button></div><div class="flex gap-2 mt-2"><input v-model="newTravelerName" class="flex-1 border rounded px-2 py-1" placeholder="名字"><button @click="addTraveler" class="bg-primary text-white px-3 rounded"><i class="fas fa-plus"></i></button></div><button @click="showTravelerModal = false" class="w-full bg-gray-100 mt-4 py-2 rounded-lg font-bold">完成</button></div></div>
 
 </div>
 
@@ -928,19 +920,6 @@
                 cardHeight: 0
             });
             const itineraryContainer = ref(null);
-
-            // Drag State for Day Manager
-            const dayDragState = ref({
-                isDragging: false,
-                index: null,
-                y: 0,
-                x: 0,
-                offsetY: 0,
-                offsetX: 0,
-                rowHeight: 0,
-                width: 0 // Captured width
-            });
-            const dayManagerList = ref(null);
 
             // Settings State
             const showSettingsModal = ref(false);
@@ -1109,87 +1088,24 @@
             const addDay = () => { const last = tripDays.value[tripDays.value.length - 1]; const d = new Date(last ? last.date : new Date()); d.setDate(d.getDate() + 1); tripDays.value.push({ date: d.toISOString().split('T')[0], items: [] }); fetchWeather(); };
             const deleteDay = (i) => { if(tripDays.value.length > 1 && confirm('刪除此日？')) { tripDays.value.splice(i, 1); if(currentDayIndex.value>=tripDays.value.length) currentDayIndex.value--; fetchWeather(); } };
             
-            // Drag and Drop Logic (Day Manager - NEW)
-            const startDayManagerDrag = (e, idx) => {
-                const touch = e.touches ? e.touches[0] : e;
-                const element = e.target.closest('.draggable-item-container');
-                const rect = element.getBoundingClientRect();
-                
-                dayDragState.value = {
-                    isDragging: true,
-                    index: idx,
-                    y: rect.top,
-                    x: rect.left,
-                    offsetY: touch.clientY - rect.top,
-                    offsetX: touch.clientX - rect.left,
-                    rowHeight: rect.height,
-                    width: rect.width // Capture Width
-                };
-
-                window.addEventListener('touchmove', onDayManagerMove, { passive: false });
-                window.addEventListener('touchend', onDayManagerEnd);
-                window.addEventListener('mousemove', onDayManagerMove);
-                window.addEventListener('mouseup', onDayManagerEnd);
-            };
-
-            const onDayManagerMove = (e) => {
-                if (!dayDragState.value.isDragging) return;
-                e.preventDefault();
-
-                const touch = e.touches ? e.touches[0] : e;
-                const currentY = touch.clientY;
-                const currentX = touch.clientX;
-
-                // Update Ghost
-                dayDragState.value.y = currentY - dayDragState.value.offsetY;
-                dayDragState.value.x = currentX - dayDragState.value.offsetX;
-
-                // Swap Logic
-                const list = tripDays.value;
-                const itemHeight = dayDragState.value.rowHeight + 12; // Height + Gap estimate
-                
-                // Get container scroll
-                const container = document.querySelector('.modal-content');
-                if(!container) return;
-                const containerRect = container.getBoundingClientRect();
-                const relativeY = currentY - containerRect.top + container.scrollTop;
-                
-                let newIndex = -1;
-                
-                // Find element under cursor to swap
-                const elements = document.querySelectorAll('.draggable-item-container');
-                elements.forEach((el, idx) => {
-                    const rect = el.getBoundingClientRect();
-                    if(currentY > rect.top && currentY < rect.bottom) {
-                        newIndex = idx;
-                    }
-                });
-
-                if (newIndex !== -1 && newIndex !== dayDragState.value.index) {
-                    const movingItem = list[dayDragState.value.index];
-                    list.splice(dayDragState.value.index, 1);
-                    list.splice(newIndex, 0, movingItem);
-                    dayDragState.value.index = newIndex;
-                    if (navigator.vibrate) navigator.vibrate(5);
-                }
-            };
-
-            const onDayManagerEnd = () => {
-                if (!dayDragState.value.isDragging) return;
-                
-                window.removeEventListener('touchmove', onDayManagerMove);
-                window.removeEventListener('touchend', onDayManagerEnd);
-                window.removeEventListener('mousemove', onDayManagerMove);
-                window.removeEventListener('mouseup', onDayManagerEnd);
-
-                dayDragState.value.isDragging = false;
-                onDateChange(0); // Recalculate dates
-                saveData();
+            // Drag and Drop Logic (Day Manager)
+            const swapDays = (idx1, idx2) => { if(idx1===idx2) return; const t = tripDays.value[idx1].items; tripDays.value[idx1].items = tripDays.value[idx2].items; tripDays.value[idx2].items = t; };
+            const dragStart = (e, i) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); draggingIndex.value = i; };
+            const onDrop = (e, i) => { swapDays(parseInt(e.dataTransfer.getData('text/plain')), i); draggingIndex.value = null; };
+            const touchStart = (e, i) => { touchStartIndex.value = i; draggingIndex.value = i; };
+            const touchEnd = (e) => {
+                const el = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                if(el) { const w = el.closest('.draggable-item'); if(w) { const idx = Array.from(document.querySelectorAll('.draggable-item')).indexOf(w); if(idx !== -1 && touchStartIndex.value !== null) swapDays(touchStartIndex.value, idx); } }
+                draggingIndex.value = null; touchStartIndex.value = null;
             };
 
             // === Pull to Refresh (Optimized) ===
             const handleTouchStart = (e) => {
+                // 1. 僅允許在 Header 區域觸發 (Only allow trigger in Header)
+                // 這樣可以避免下方的功能頁面(Itinerary, Expenses等)誤觸
                 if (!e.target.closest('.header-section')) return;
+
+                // 2. 確保沒有在滾動狀態 (Ensure not scrolling)
                 if (window.scrollY === 0) {
                     startY.value = e.touches[0].clientY;
                     isPulling.value = true;
@@ -1512,12 +1428,10 @@
                 showSettingsModal, appSettings, presetColors, presetBgs, cssVars, getNoteStyle, overlayStyle, handleFileUpload, saveSettingsAndReload,
                 isPulling, isRefreshing, pullDistance, containerTransform, handleTouchStart, handleTouchMove, handleTouchEnd,
                 // Updated Exports
-                dragState, startItemDrag, itineraryContainer, dayScrollContainer, 
+                dragState, startItemDrag, itineraryContainer, 
                 infoData, addInfoItem, removeInfoItem, calculateDuration, autoFillPlace, fetchFlightInfo, loadingFlight,
                 firstItemCommute, firstItemMode, updateFirstItemTransport, formatDuration, checkOverlap, getSelectedHotelAddress,
-                shoppingList, showShoppingModal, isEditingShopping, shoppingForm, openShoppingModal, editShoppingItem, saveShoppingItem, deleteShoppingItem, toggleBought, handleShoppingImageUpload,
-                // Day Manager
-                dayDragState, startDayManagerDrag, dayManagerList
+                shoppingList, showShoppingModal, isEditingShopping, shoppingForm, openShoppingModal, editShoppingItem, saveShoppingItem, deleteShoppingItem, toggleBought, handleShoppingImageUpload
             };
         }
     }).mount('#app');
