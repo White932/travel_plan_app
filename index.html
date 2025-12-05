@@ -1073,7 +1073,7 @@
 
     // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
     
     // 設定文件路徑：trips 集合 -> tokyo_share 文件
     // 如果您想做多個不同行程，可以把 "tokyo_share" 改成變數，例如從網址讀取 ?trip=xxx
