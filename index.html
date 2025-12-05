@@ -1209,7 +1209,6 @@
                 const containerScrollTop = dayListContainer.value.parentNode.scrollTop; // Modal body scroll
                 
                 // Calculate relative Y within the list
-                // We use the center of the ghost card for better detection
                 const ghostCenterY = currentY - containerRect.top + (dayDragState.value.itemHeight / 2);
                 
                 // Estimated new index
@@ -1217,11 +1216,19 @@
                 newIndex = Math.max(0, Math.min(newIndex, tripDays.value.length - 1));
 
                 if (newIndex !== dayDragState.value.dragIndex) {
-                    // Swap Logic
+                    // 1. 保留原本的日期序列 (Preserve original date sequence)
+                    const dates = tripDays.value.map(d => d.date);
+
+                    // 2. 交換物件 (Swap Logic)
                     const movingItem = tripDays.value[dayDragState.value.dragIndex];
                     tripDays.value.splice(dayDragState.value.dragIndex, 1);
                     tripDays.value.splice(newIndex, 0, movingItem);
                     
+                    // 3. 將日期重新填回，確保日期不會跟著移動 (Restore dates to indices)
+                    tripDays.value.forEach((d, i) => {
+                        d.date = dates[i];
+                    });
+
                     dayDragState.value.dragIndex = newIndex;
                     
                     if (navigator.vibrate) navigator.vibrate(5);
