@@ -572,10 +572,12 @@
                             <select v-model="displayCurrency" class="bg-white/20 border-none text-white text-xs rounded px-2 py-1 outline-none cursor-pointer font-mono font-bold"><option v-for="curr in currencies" :key="curr" :value="curr">{{ curr }}</option></select>
                         </div>
                         <h2 class="text-4xl font-bold mb-4 font-mono">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(totalExpenseDisplay).toLocaleString() }}</h2>
-                        <div class="flex justify-between items-center border-t border-gray-700 pt-4">
-                            <span class="text-sm text-gray-300">{{ getExchangeRateText }}</span>
-                            <button @click="showSettlement = true" class="bg-primary hover:opacity-90 px-4 py-1.5 rounded-full text-sm font-bold transition-opacity">結算報表</button>
-                        </div>
+                        <!-- 原本的按鈕位置在 Tab 2: Expenses 的頂部總支出卡片內 -->
+<div class="flex justify-between items-center border-t border-gray-700 pt-4">
+    <span class="text-sm text-gray-300">{{ getExchangeRateText }}</span>
+    <!-- 修改此處：改用 openSettlementModal 函數觸發 -->
+    <button @click="openSettlementModal" class="bg-primary hover:opacity-90 px-4 py-1.5 rounded-full text-sm font-bold transition-opacity shadow-lg shadow-red-500/30">結算報表</button>
+</div>
                     </div>
                 </div>
                  <div class="grid grid-cols-4 gap-3 mb-6">
@@ -1627,30 +1629,84 @@
                 return icons[cat] || icons['other'];
             };
 
-            const settlements = computed(() => {
-                let debts = {}; travelers.value.forEach(p => { debts[p] = {}; travelers.value.forEach(o => { if(p!==o) debts[p][o] = 0; }); });
-                expenses.value.forEach(e => {
-                    const amt = convertCurrency(e.amount, e.currency, displayCurrency.value);
-                    const inv = (e.involved && e.involved.length>0) ? e.involved : [];
-                    if(inv.length>0) {
-                        const split = amt/inv.length;
-                        inv.forEach(p => { if(p!==e.payer) { if(!debts[p][e.payer]) debts[p][e.payer]=0; debts[p][e.payer]+=split; } });
-                    }
-                });
-                let res = []; let processed = new Set();
-                travelers.value.forEach(p1 => {
-                    travelers.value.forEach(p2 => {
-                        if(p1===p2) return;
-                        const key = [p1,p2].sort().join('-');
-                        if(processed.has(key)) return;
-                        processed.add(key);
-                        const a = (debts[p1]&&debts[p1][p2])||0; const b = (debts[p2]&&debts[p2][p1])||0;
-                        if(a>b) { const d=a-b; if(d>0.1) res.push({from:p1, to:p2, amount:d}); }
-                        else if(b>a) { const d=b-a; if(d>0.1) res.push({from:p2, to:p1, amount:d}); }
+           // 將原本的 computed settlements 替換為以下的 ref 和函數
+            const settlements = ref([]);
+
+            const openSettlementModal = () => {
+                try {
+                    // 1. 初始化債務矩陣 (僅包含目前的旅伴)
+                    let debts = {};
+                    const currentTravelers = travelers.value; // 取得當前旅伴列表快照
+                    
+                    // 建立安全的債務網格
+                    currentTravelers.forEach(p => {
+                        debts[p] = {};
+                        currentTravelers.forEach(o => { 
+                            if (p !== o) debts[p][o] = 0; 
+                        });
                     });
-                });
-                return res;
-            });
+
+                    // 2. 計算帳目 (加入防呆機制)
+                    expenses.value.forEach(e => {
+                        // 如果金額無效則跳過
+                        if (!e.amount) return;
+
+                        const amt = convertCurrency(e.amount, e.currency, displayCurrency.value);
+                        
+                        // 過濾參與者：必須存在於「目前的旅伴列表」中，避免因旅伴被刪除導致卡死
+                        // 如果涉及的人已經被刪除了，這裡會自動過濾掉，防止報錯
+                        const validInvolved = (e.involved || []).filter(p => currentTravelers.includes(p));
+                        
+                        // 付款人也必須存在於目前旅伴中
+                        if (!currentTravelers.includes(e.payer)) return; 
+
+                        if (validInvolved.length > 0) {
+                            const split = amt / validInvolved.length;
+                            validInvolved.forEach(p => {
+                                if (p !== e.payer) {
+                                    // 安全寫入：確認物件存在才加總
+                                    if (debts[p] && debts[p][e.payer] !== undefined) {
+                                        debts[p][e.payer] += split;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    // 3. 簡化債務關係 (雙向抵銷)
+                    let res = [];
+                    let processed = new Set();
+                    
+                    currentTravelers.forEach(p1 => {
+                        currentTravelers.forEach(p2 => {
+                            if (p1 === p2) return;
+                            
+                            // 建立唯一鍵值避免重複計算 (A-B 和 B-A 視為同一組)
+                            const key = [p1, p2].sort().join('-');
+                            if (processed.has(key)) return;
+                            processed.add(key);
+                            
+                            const a = (debts[p1] && debts[p1][p2]) || 0; // p1 欠 p2
+                            const b = (debts[p2] && debts[p2][p1]) || 0; // p2 欠 p1
+                            
+                            if (a > b) {
+                                const d = a - b;
+                                if (d > 1) res.push({ from: p1, to: p2, amount: d });
+                            } else if (b > a) {
+                                const d = b - a;
+                                if (d > 1) res.push({ from: p2, to: p1, amount: d });
+                            }
+                        });
+                    });
+
+                    settlements.value = res;
+                    showSettlement.value = true; // 計算完成後才開啟視窗
+
+                } catch (error) {
+                    console.error("Settlement calculation error:", error);
+                    alert("結算過程發生異常，請檢查是否移除了仍有帳目的旅伴。");
+                }
+            };
 
             // Shopping Logic
             const openShoppingModal = () => { isEditingShopping.value = false; shoppingForm.value = { id: Date.now(), name: '', image: '', bought: false }; showShoppingModal.value = true; };
@@ -1935,7 +1991,7 @@
                 activeTab, tripTitle, isEditingTitle, editTitle, saveTitle, titleInput, tripDays, currentDayIndex, totalDays, addDay, deleteDay, showDayManager,
                 currentItinerary, showItineraryModal, isEditing, form, openAddModal, editItem, saveItem, deleteItem, openMap, getMapEmbedUrl,
                 calculateEndTime, getGoogleMapsDirectionUrl, setTransportMode, updateCommuteTime, travelers, expenses, totalExpenseDisplay, showExpenseModal, showTravelerModal, showSettlement,
-                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements, currentWeather, getWeatherClass, onDateChange,
+                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements,openSettlementModal, currentWeather, getWeatherClass, onDateChange,
                 
                 dayDragState, startDayDrag, dayListContainer, // New exports for optimized Day Manager
                 draggingIndex, // Keep compatibility
