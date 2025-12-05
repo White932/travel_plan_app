@@ -255,7 +255,8 @@
         /* Scroll Safe Areas - Ensure these allow vertical scrolling */
         .card-scroll-safe { touch-action: pan-y !important; cursor: default; }
         .timeline-left-area { touch-action: pan-y !important; }
-	/* === 輸入體驗優化 (Input Experience) === */
+        
+        /* === 輸入體驗優化 (Input Experience) === */
         /* 強制手機版輸入框字體 16px，防止 iOS 自動放大導致畫面跑版 */
         @media (max-width: 768px) {
             input, select, textarea { font-size: 16px !important; }
@@ -572,8 +573,7 @@
                             <select v-model="displayCurrency" class="bg-white/20 border-none text-white text-xs rounded px-2 py-1 outline-none cursor-pointer font-mono font-bold"><option v-for="curr in currencies" :key="curr" :value="curr">{{ curr }}</option></select>
                         </div>
                         <h2 class="text-4xl font-bold mb-4 font-mono">{{ getCurrencySymbol(displayCurrency) }} {{ Math.round(totalExpenseDisplay).toLocaleString() }}</h2>
-                        <!-- 原本的按鈕位置在 Tab 2: Expenses 的頂部總支出卡片內 -->
-<div class="flex justify-between items-center border-t border-gray-700 pt-4">
+                        <div class="flex justify-between items-center border-t border-gray-700 pt-4">
     <span class="text-sm text-gray-300">{{ getExchangeRateText }}</span>
     <!-- 修改此處：改用 openSettlementModal 函數觸發 -->
     <button @click="openSettlementModal" class="bg-primary hover:opacity-90 px-4 py-1.5 rounded-full text-sm font-bold transition-opacity shadow-lg shadow-red-500/30">結算報表</button>
@@ -1629,7 +1629,7 @@
                 return icons[cat] || icons['other'];
             };
 
-           // 將原本的 computed settlements 替換為以下的 ref 和函數
+            // 將原本的 computed settlements 替換為以下的 ref 和函數
             const settlements = ref([]);
 
             const openSettlementModal = () => {
@@ -1991,7 +1991,7 @@
                 activeTab, tripTitle, isEditingTitle, editTitle, saveTitle, titleInput, tripDays, currentDayIndex, totalDays, addDay, deleteDay, showDayManager,
                 currentItinerary, showItineraryModal, isEditing, form, openAddModal, editItem, saveItem, deleteItem, openMap, getMapEmbedUrl,
                 calculateEndTime, getGoogleMapsDirectionUrl, setTransportMode, updateCommuteTime, travelers, expenses, totalExpenseDisplay, showExpenseModal, showTravelerModal, showSettlement,
-                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements,openSettlementModal, currentWeather, getWeatherClass, onDateChange,
+                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements,  openSettlementModal, currentWeather, getWeatherClass, onDateChange,
                 
                 dayDragState, startDayDrag, dayListContainer, // New exports for optimized Day Manager
                 draggingIndex, // Keep compatibility
