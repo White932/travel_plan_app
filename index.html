@@ -182,19 +182,18 @@
         .shop-card.bought .shop-bought-mask { opacity: 1; }
         .shop-card.bought .shop-img { filter: grayscale(100%); }
 
-        /* === 列表動畫優化 (Refined Animations - Delicate & Smooth) === */
-        /* 使用更平滑、細膩的貝茲曲線，動態更美 */
+        /* === 列表動畫優化 (Refined Animations) === */
         .list-move {
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .list-enter-active,
         .list-leave-active {
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .list-enter-from,
         .list-leave-to {
             opacity: 0;
-            transform: translateY(15px) scale(0.98);
+            transform: translateY(15px);
         }
         .list-leave-active {
             position: absolute; 
@@ -203,11 +202,16 @@
 
         .is-being-dragged { opacity: 0.3; filter: grayscale(100%); transform: scale(0.95); transition: all 0.2s; }
 
-        .ghost-card-container {
+        .ghost-card-container, .ghost-day-container {
             position: fixed; z-index: 9999; pointer-events: none;
             width: calc(100% - 3rem); max-width: 550px;
             transform-origin: center center;
             animation: lift-up 0.2s forwards; touch-action: none;
+        }
+        
+        .ghost-day-container {
+            width: calc(100% - 3rem);
+            max-width: 340px; /* Match modal width roughly */
         }
         
         @keyframes lift-up {
@@ -784,24 +788,24 @@
         </div>
     </div>
 
-    <!-- Day Manager Modal (Updated with Transition & Animation) -->
+    <!-- Day Manager Modal (Optimized for Smooth Dragging) -->
     <div v-if="showDayManager" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto" ref="dayManagerModal">
             <h3 class="text-lg font-bold mb-4 flex justify-between items-center">管理天數 <button @click="showDayManager = false" class="text-gray-400 w-8 h-8 rounded-full hover:bg-gray-100"><i class="fas fa-times"></i></button></h3>
             
-            <!-- List Container with Transition -->
-            <div class="mb-4 relative touch-action-none">
+            <!-- List Container -->
+            <div class="mb-4 relative touch-action-none" ref="dayListContainer">
                 <transition-group name="list" tag="div" class="space-y-3">
                     <div v-for="(day, index) in tripDays" :key="day.id || index" 
                          :data-index="index"
                          class="draggable-day-item flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100 select-none relative transition-all duration-200"
-                         :class="{ 'z-50 scale-105 shadow-xl ring-2 ring-primary border-primary bg-white opacity-95': dayDragState.dragIndex === index }">
+                         :class="{ 'opacity-30 border-dashed border-gray-300 bg-gray-100': dayDragState.isDragging && dayDragState.dragIndex === index }">
                         
                         <div class="flex items-center gap-3 w-full">
-                            <!-- Drag Handle: 只有按住這裡才能拖曳，並防止捲動 -->
+                            <!-- Drag Handle -->
                             <div class="text-gray-300 px-2 py-2 cursor-grab active:cursor-grabbing touch-none"
-                                 @touchstart.prevent="startDayDrag($event, index)"
-                                 @mousedown.prevent="startDayDrag($event, index)">
+                                 @touchstart.prevent="startDayDrag($event, index, day)"
+                                 @mousedown.prevent="startDayDrag($event, index, day)">
                                 <i class="fas fa-bars text-lg"></i>
                             </div>
                             
@@ -822,6 +826,29 @@
             </div>
 
             <button @click="addDay" class="w-full py-3 border border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 transition-colors"><i class="fas fa-plus mr-2"></i>新增一天</button>
+        </div>
+    </div>
+
+    <!-- Day Ghost (Visible when dragging day) -->
+    <div v-if="dayDragState.isDragging && dayDragState.item" 
+         class="ghost-day-container" 
+         :style="{ top: dayDragState.y + 'px', left: dayDragState.x + 'px' }">
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl shadow-2xl ring-2 ring-primary border border-primary select-none relative opacity-95">
+            <div class="flex items-center gap-3 w-full">
+                <div class="text-primary px-2 py-2">
+                    <i class="fas fa-bars text-lg"></i>
+                </div>
+                <div class="flex flex-col flex-1">
+                    <span class="font-bold text-gray-800 text-sm">Day {{ dayDragState.dragIndex + 1 }}</span>
+                    <span class="text-xs text-gray-500 font-mono">{{ dayDragState.item.date }}</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 pl-2 border-l border-gray-200 ml-2">
+                <span class="text-[10px] bg-white px-2 py-1 rounded border text-gray-400 whitespace-nowrap">{{ dayDragState.item.items.length }} 景點</span>
+                <button class="w-8 h-8 flex items-center justify-center rounded text-red-300">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -990,21 +1017,39 @@
                 return { backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`, borderLeftColor: hex, color: `rgba(${r}, ${g}, ${b}, 0.9)` };
             };
 
-            // Drag & Drop (Day Manager) - Enhanced Version
+            // Enhanced Drag & Drop for Day Manager (Native-like Smoothness)
             const draggingIndex = ref(null);
+            const dayListContainer = ref(null);
             
-            // State for Day Manager Drag
             const dayDragState = ref({
                 isDragging: false,
-                dragIndex: null
+                dragIndex: null,
+                item: null, // Copy of the dragged item data for ghost
+                y: 0,
+                x: 0,
+                offsetY: 0,
+                offsetX: 0,
+                itemHeight: 0
             });
 
-            // Enhanced Drag & Drop (Day Manager)
-            const startDayDrag = (e, index) => {
-                dayDragState.value.isDragging = true;
-                dayDragState.value.dragIndex = index;
+            const startDayDrag = (e, index, item) => {
+                const touch = e.touches ? e.touches[0] : e;
+                const target = e.target.closest('.draggable-day-item');
+                if (!target) return;
 
-                // Add Global Listeners
+                const rect = target.getBoundingClientRect();
+                
+                dayDragState.value = {
+                    isDragging: true,
+                    dragIndex: index,
+                    item: JSON.parse(JSON.stringify(item)),
+                    y: rect.top,
+                    x: rect.left,
+                    offsetY: touch.clientY - rect.top,
+                    offsetX: touch.clientX - rect.left,
+                    itemHeight: rect.height + 12 // Height + gap approximation
+                };
+
                 window.addEventListener('touchmove', onDayDragMove, { passive: false });
                 window.addEventListener('touchend', onDayDragEnd);
                 window.addEventListener('mousemove', onDayDragMove);
@@ -1014,46 +1059,52 @@
             const onDayDragMove = (e) => {
                 if (!dayDragState.value.isDragging) return;
                 
-                // Prevent scrolling while dragging days
-                if(e.cancelable) e.preventDefault();
+                if(e.cancelable) e.preventDefault(); // Prevent scroll
 
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const touch = e.touches ? e.touches[0] : e;
+                const currentY = touch.clientY;
+                const currentX = touch.clientX;
 
-                // Use elementFromPoint to find which item we are hovering over
-                const targetEl = document.elementFromPoint(clientX, clientY);
-                const dayItem = targetEl?.closest('.draggable-day-item');
+                // Move Ghost
+                dayDragState.value.y = currentY - dayDragState.value.offsetY;
+                dayDragState.value.x = currentX - dayDragState.value.offsetX;
 
-                if (dayItem) {
-                    const newIndex = parseInt(dayItem.getAttribute('data-index'));
-                    const oldIndex = dayDragState.value.dragIndex;
+                // Calculate Swap Logic based on position relative to container
+                if (!dayListContainer.value) return;
 
-                    if (!isNaN(newIndex) && newIndex !== oldIndex && newIndex !== -1) {
-                        // Swap Logic
-                        const movingItem = tripDays.value[oldIndex];
-                        tripDays.value.splice(oldIndex, 1);
-                        tripDays.value.splice(newIndex, 0, movingItem);
-                        
-                        // Update tracking index
-                        dayDragState.value.dragIndex = newIndex;
-                        
-                        // Haptic feedback
-                        if (navigator.vibrate) navigator.vibrate(5);
-                    }
+                const containerRect = dayListContainer.value.getBoundingClientRect();
+                const containerScrollTop = dayListContainer.value.parentNode.scrollTop; // Modal body scroll
+                
+                // Calculate relative Y within the list
+                // We use the center of the ghost card for better detection
+                const ghostCenterY = currentY - containerRect.top + (dayDragState.value.itemHeight / 2);
+                
+                // Estimated new index
+                let newIndex = Math.floor(ghostCenterY / dayDragState.value.itemHeight);
+                newIndex = Math.max(0, Math.min(newIndex, tripDays.value.length - 1));
+
+                if (newIndex !== dayDragState.value.dragIndex) {
+                    // Swap Logic
+                    const movingItem = tripDays.value[dayDragState.value.dragIndex];
+                    tripDays.value.splice(dayDragState.value.dragIndex, 1);
+                    tripDays.value.splice(newIndex, 0, movingItem);
+                    
+                    dayDragState.value.dragIndex = newIndex;
+                    
+                    if (navigator.vibrate) navigator.vibrate(5);
                 }
             };
 
             const onDayDragEnd = () => {
                 dayDragState.value.isDragging = false;
                 dayDragState.value.dragIndex = null;
+                dayDragState.value.item = null;
                 
-                // Remove Global Listeners
                 window.removeEventListener('touchmove', onDayDragMove);
                 window.removeEventListener('touchend', onDayDragEnd);
                 window.removeEventListener('mousemove', onDayDragMove);
                 window.removeEventListener('mouseup', onDayDragEnd);
                 
-                // Recalculate dates based on new order
                 onDateChange(0); 
                 saveData();
             };
@@ -1523,13 +1574,14 @@
                 currentItinerary, showItineraryModal, isEditing, form, openAddModal, editItem, saveItem, deleteItem, openMap, getMapEmbedUrl,
                 calculateEndTime, getGoogleMapsDirectionUrl, setTransportMode, updateCommuteTime, travelers, expenses, totalExpenseDisplay, showExpenseModal, showTravelerModal, showSettlement,
                 expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements, currentWeather, getWeatherClass, onDateChange,
-                dayDragState, startDayDrag, // Added for Day Manager Drag
-                dragStart: () => {}, onDrop: () => {}, draggingIndex, touchStart: () => {}, touchEnd: () => {}, // Placeholders or kept for compat if needed elsewhere
+                
+                dayDragState, startDayDrag, dayListContainer, // New exports for optimized Day Manager
+                draggingIndex, // Keep compatibility
+                
                 exchangeRates, convertCurrency, getCurrencySymbol, displayCurrency, getExchangeRateText,
                 openAddExpenseModal, openEditExpense, toggleInvolved, isEditingExpense, currencies, tempDurationH, tempDurationM, validateDuration, getCategoryIcon,
                 showSettingsModal, appSettings, presetColors, presetBgs, cssVars, getNoteStyle, overlayStyle, handleFileUpload, saveSettingsAndReload,
                 isPulling, isRefreshing, pullDistance, containerTransform, handleTouchStart, handleTouchMove, handleTouchEnd,
-                // Updated Exports
                 dragState, startItemDrag, itineraryContainer, 
                 infoData, addInfoItem, removeInfoItem, calculateDuration, autoFillPlace, fetchFlightInfo, loadingFlight,
                 firstItemCommute, firstItemMode, updateFirstItemTransport, formatDuration, checkOverlap, getSelectedHotelAddress,
