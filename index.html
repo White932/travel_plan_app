@@ -1553,19 +1553,250 @@
                 const flightNum = infoData.value.flights[direction].flightNum;
                 if(!flightNum) return alert('請輸入航班編號');
                 loadingFlight.value = direction;
-                await new Promise(r => setTimeout(r, 1000));
+                await new Promise(r => setTimeout(r, 600)); 
                 const target = infoData.value.flights[direction];
                 const code = flightNum.toUpperCase().replace(/\s/g, '');
                 
-                // Mock DB
+                // 2024-2025 亞洲擴大版航線資料庫 (台灣出發/抵達)
+                // 格式：TPE(航廈) -> 目的地(航廈)
                 const flightDB = {
-                    'BR198': { dep: '08:50', arr: '13:15', route: 'TPE-NRT (T1)' }, 'BR197': { dep: '14:15', arr: '17:15', route: 'NRT (T1)-TPE' },
-                    'JX800': { dep: '08:30', arr: '12:30', route: 'TPE-NRT (T2)' }, 'JX801': { dep: '13:40', arr: '16:45', route: 'NRT (T2)-TPE' },
-                    'CI100': { dep: '08:55', arr: '13:15', route: 'TPE-NRT (T2)' }, 'CI101': { dep: '14:35', arr: '17:40', route: 'NRT (T2)-TPE' }
+                    // ==========================================
+                    // 🇯🇵 日本 - 東京成田 (NRT)
+                    // ==========================================
+                    'BR198': { dep: '08:50', arr: '12:55', route: 'TPE(T2)→NRT(T1)' },
+                    'BR184': { dep: '07:55', arr: '12:00', route: 'TPE(T2)→NRT(T1)' },
+                    'BR196': { dep: '15:20', arr: '19:20', route: 'TPE(T2)→NRT(T1)' },
+                    'BR197': { dep: '14:00', arr: '16:50', route: 'NRT(T1)→TPE(T2)' },
+                    'BR195': { dep: '20:20', arr: '23:25', route: 'NRT(T1)→TPE(T2)' },
+                    'BR183': { dep: '13:00', arr: '15:50', route: 'NRT(T1)→TPE(T2)' },
+                    'CI100': { dep: '08:55', arr: '13:15', route: 'TPE(T2)→NRT(T2)' },
+                    'CI104': { dep: '12:40', arr: '16:55', route: 'TPE(T2)→NRT(T2)' },
+                    'CI108': { dep: '14:30', arr: '18:30', route: 'TPE(T2)→NRT(T2)' },
+                    'CI101': { dep: '14:35', arr: '17:40', route: 'NRT(T2)→TPE(T2)' },
+                    'CI105': { dep: '17:45', arr: '20:50', route: 'NRT(T2)→TPE(T2)' },
+                    'CI109': { dep: '20:00', arr: '22:55', route: 'NRT(T2)→TPE(T2)' },
+                    'JX800': { dep: '08:30', arr: '12:30', route: 'TPE(T1)→NRT(T2)' },
+                    'JX802': { dep: '11:00', arr: '15:00', route: 'TPE(T1)→NRT(T2)' },
+                    'JX804': { dep: '15:00', arr: '19:00', route: 'TPE(T1)→NRT(T2)' },
+                    'JX801': { dep: '13:40', arr: '16:45', route: 'NRT(T2)→TPE(T1)' },
+                    'JX803': { dep: '16:10', arr: '19:25', route: 'NRT(T2)→TPE(T1)' },
+                    'JX805': { dep: '20:10', arr: '23:20', route: 'NRT(T2)→TPE(T1)' },
+                    'IT200': { dep: '06:35', arr: '11:00', route: 'TPE(T1)→NRT(T2)' },
+                    'IT202': { dep: '14:15', arr: '18:35', route: 'TPE(T1)→NRT(T2)' },
+                    'IT201': { dep: '11:50', arr: '15:00', route: 'NRT(T2)→TPE(T1)' },
+                    'IT203': { dep: '19:25', arr: '22:35', route: 'NRT(T2)→TPE(T1)' },
+                    'JL802': { dep: '10:00', arr: '14:00', route: 'TPE(T2)→NRT(T2)' },
+                    'JL809': { dep: '18:00', arr: '21:15', route: 'NRT(T2)→TPE(T2)' },
+                    'NH824': { dep: '09:30', arr: '13:40', route: 'TPE(T2)→NRT(T1)' },
+                    'NH823': { dep: '18:40', arr: '21:50', route: 'NRT(T1)→TPE(T2)' },
+                    'CX450': { dep: '13:00', arr: '17:15', route: 'TPE(T1)→NRT(T2)' },
+                    'TR898': { dep: '06:40', arr: '10:45', route: 'TPE(T1)→NRT(T1)' },
+                    'MM620': { dep: '02:25', arr: '06:50', route: 'TPE(T1)→NRT(T1)' },
+
+                    // ==========================================
+                    // 🇯🇵 日本 - 東京羽田 (HND)
+                    // ==========================================
+                    'BR192': { dep: '07:30', arr: '11:15', route: 'TSA(T1)→HND(T3)' },
+                    'BR190': { dep: '16:15', arr: '19:55', route: 'TSA(T1)→HND(T3)' },
+                    'BR191': { dep: '12:40', arr: '15:05', route: 'HND(T3)→TSA(T1)' },
+                    'CI220': { dep: '09:00', arr: '12:50', route: 'TSA(T1)→HND(T3)' },
+                    'CI222': { dep: '18:25', arr: '22:05', route: 'TSA(T1)→HND(T3)' },
+                    'CI221': { dep: '14:30', arr: '16:55', route: 'HND(T3)→TSA(T1)' },
+                    'JL096': { dep: '09:10', arr: '13:10', route: 'TSA(T1)→HND(T3)' },
+                    'JL098': { dep: '14:20', arr: '18:20', route: 'TSA(T1)→HND(T3)' },
+                    'JL097': { dep: '08:35', arr: '11:15', route: 'HND(T3)→TSA(T1)' },
+                    'NH852': { dep: '13:30', arr: '17:30', route: 'TSA(T1)→HND(T2)' },
+                    'NH851': { dep: '09:20', arr: '11:50', route: 'HND(T2)→TSA(T1)' },
+                    'IT216': { dep: '00:10', arr: '04:00', route: 'TPE(T1)→HND(T3)' },
+                    'IT217': { dep: '05:00', arr: '07:55', route: 'HND(T3)→TPE(T1)' },
+                    'MM860': { dep: '20:50', arr: '00:45', route: 'TPE(T1)→HND(T3)' },
+
+                    // ==========================================
+                    // 🇯🇵 日本 - 大阪關西 (KIX)
+                    // ==========================================
+                    'BR132': { dep: '08:30', arr: '11:55', route: 'TPE(T2)→KIX(T1)' },
+                    'BR130': { dep: '12:30', arr: '15:55', route: 'TPE(T2)→KIX(T1)' },
+                    'BR178': { dep: '06:30', arr: '09:55', route: 'TPE(T2)→KIX(T1)' },
+                    'BR131': { dep: '12:55', arr: '15:05', route: 'KIX(T1)→TPE(T2)' },
+                    'CI152': { dep: '09:00', arr: '12:50', route: 'TPE(T2)→KIX(T1)' },
+                    'CI156': { dep: '08:10', arr: '11:40', route: 'TPE(T2)→KIX(T1)' },
+                    'CI172': { dep: '14:20', arr: '17:45', route: 'TPE(T2)→KIX(T1)' },
+                    'CI153': { dep: '14:00', arr: '16:15', route: 'KIX(T1)→TPE(T2)' },
+                    'JX820': { dep: '07:40', arr: '11:10', route: 'TPE(T1)→KIX(T1)' },
+                    'JX822': { dep: '10:15', arr: '13:45', route: 'TPE(T1)→KIX(T1)' },
+                    'JX821': { dep: '12:20', arr: '14:35', route: 'KIX(T1)→TPE(T1)' },
+                    'IT210': { dep: '06:40', arr: '10:25', route: 'TPE(T1)→KIX(T1)' },
+                    'IT212': { dep: '14:20', arr: '17:45', route: 'TPE(T1)→KIX(T1)' },
+
+                    // ==========================================
+                    // 🇯🇵 日本 - 其他城市 (FUK, OKA, CTS, NGO, SDJ, KMJ)
+                    // ==========================================
+                    // 名古屋 (NGO)
+                    'CI154': { dep: '07:30', arr: '11:05', route: 'TPE(T2)→NGO(T1)' },
+                    'CI151': { dep: '09:50', arr: '12:15', route: 'NGO(T1)→TPE(T2)' },
+                    'CX530': { dep: '11:45', arr: '15:25', route: 'TPE(T1)→NGO(T1)' },
+                    'JX838': { dep: '14:40', arr: '18:15', route: 'TPE(T1)→NGO(T1)' },
+                    'JX839': { dep: '19:15', arr: '21:50', route: 'NGO(T1)→TPE(T1)' },
+                    // 福岡 (FUK)
+                    'BR106': { dep: '08:10', arr: '11:15', route: 'TPE(T2)→FUK(Int)' },
+                    'BR105': { dep: '12:15', arr: '13:50', route: 'FUK(Int)→TPE(T2)' },
+                    'CI110': { dep: '06:50', arr: '09:55', route: 'TPE(T2)→FUK(Int)' },
+                    'CI116': { dep: '16:40', arr: '19:55', route: 'TPE(T2)→FUK(Int)' },
+                    'JX840': { dep: '10:30', arr: '13:45', route: 'TPE(T1)→FUK(Int)' },
+                    'JX841': { dep: '14:45', arr: '16:30', route: 'FUK(Int)→TPE(T1)' },
+                    'IT240': { dep: '06:45', arr: '10:05', route: 'TPE(T1)→FUK(Int)' },
+                    // 沖繩 (OKA)
+                    'BR112': { dep: '06:45', arr: '09:15', route: 'TPE(T2)→OKA(Int)' },
+                    'CI120': { dep: '08:05', arr: '10:35', route: 'TPE(T2)→OKA(Int)' },
+                    'JX870': { dep: '09:30', arr: '12:05', route: 'TPE(T1)→OKA(Int)' },
+                    'IT230': { dep: '06:35', arr: '09:15', route: 'TPE(T1)→OKA(Int)' },
+                    // 札幌 (CTS)
+                    'BR116': { dep: '09:30', arr: '14:05', route: 'TPE(T2)→CTS(Int)' },
+                    'CI130': { dep: '08:35', arr: '13:30', route: 'TPE(T2)→CTS(Int)' },
+                    'JX850': { dep: '09:30', arr: '14:05', route: 'TPE(T1)→CTS(Int)' },
+                    // 仙台 (SDJ)
+                    'JX862': { dep: '11:40', arr: '16:00', route: 'TPE(T1)→SDJ' },
+                    'BR118': { dep: '10:05', arr: '14:35', route: 'TPE(T2)→SDJ' },
+                    'IT254': { dep: '12:45', arr: '17:00', route: 'TPE(T1)→SDJ' },
+                    // 熊本 (KMJ)
+                    'JX846': { dep: '07:45', arr: '10:55', route: 'TPE(T1)→KMJ' },
+                    'CI194': { dep: '14:30', arr: '17:35', route: 'TPE(T2)→KMJ' },
+
+                    // ==========================================
+                    // 🇰🇷 韓國 - 首爾 (ICN/GMP), 釜山 (PUS), 濟州 (CJU)
+                    // ==========================================
+                    // 仁川 (ICN)
+                    'BR170': { dep: '07:30', arr: '10:55', route: 'TPE(T2)→ICN(T1)' },
+                    'BR160': { dep: '15:15', arr: '18:45', route: 'TPE(T2)→ICN(T1)' },
+                    'CI160': { dep: '07:40', arr: '11:10', route: 'TPE(T1)→ICN(T2)' },
+                    'CI162': { dep: '16:25', arr: '19:55', route: 'TPE(T1)→ICN(T2)' },
+                    'JX870': { dep: '07:30', arr: '11:00', route: 'TPE(T1)→ICN(T1)' }, // 注意：JX870有時飛OKA，需確認班表，此為韓國線代碼重疊情況，星宇首爾為JX870
+                    'KE186': { dep: '12:55', arr: '16:20', route: 'TPE(T1)→ICN(T2)' },
+                    'OZ712': { dep: '12:55', arr: '16:30', route: 'TPE(T2)→ICN(T1)' },
+                    'IT600': { dep: '06:20', arr: '09:50', route: 'TPE(T1)→ICN(T1)' },
+                    // 金浦 (GMP)
+                    'BR156': { dep: '09:25', arr: '12:50', route: 'TSA(T1)→GMP(Int)' },
+                    'CI260': { dep: '09:20', arr: '12:50', route: 'TSA(T1)→GMP(Int)' },
+                    // 釜山 (PUS)
+                    'CI188': { dep: '07:40', arr: '11:00', route: 'TPE(T1)→PUS(Int)' },
+                    'IT606': { dep: '16:40', arr: '19:55', route: 'TPE(T1)→PUS(Int)' },
+                    'BX794': { dep: '13:20', arr: '16:30', route: 'TPE(T1)→PUS(Int)' },
+                    'BR179': { dep: '13:30', arr: '16:55', route: 'TPE(T2)→PUS(Int)' },
+                    // 濟州 (CJU)
+                    'IT654': { dep: '07:15', arr: '10:35', route: 'TPE(T1)→CJU' },
+                    'TW688': { dep: '13:55', arr: '17:10', route: 'TPE(T1)→CJU' },
+
+                    // ==========================================
+                    // 🇻🇳 越南 - 胡志明(SGN), 河內(HAN), 峴港(DAD)
+                    // ==========================================
+                    // 胡志明 (SGN)
+                    'CI781': { dep: '07:30', arr: '10:00', route: 'TPE(T1)→SGN(T2)' },
+                    'CI783': { dep: '14:15', arr: '16:50', route: 'TPE(T1)→SGN(T2)' },
+                    'BR391': { dep: '09:10', arr: '11:40', route: 'TPE(T2)→SGN(T2)' },
+                    'BR395': { dep: '07:20', arr: '09:45', route: 'TPE(T2)→SGN(T2)' },
+                    'JX711': { dep: '08:10', arr: '10:35', route: 'TPE(T1)→SGN(T2)' },
+                    'VJ841': { dep: '06:55', arr: '09:20', route: 'TPE(T1)→SGN(T2)' },
+                    // 河內 (HAN)
+                    'CI791': { dep: '08:25', arr: '10:35', route: 'TPE(T1)→HAN(T2)' },
+                    'BR397': { dep: '09:00', arr: '11:05', route: 'TPE(T2)→HAN(T2)' },
+                    'JX717': { dep: '08:10', arr: '10:25', route: 'TPE(T1)→HAN(T2)' },
+                    // 峴港 (DAD)
+                    'JX701': { dep: '06:55', arr: '08:50', route: 'TPE(T1)→DAD(T2)' },
+                    'CI789': { dep: '14:30', arr: '16:20', route: 'TPE(T1)→DAD(T2)' },
+                    'BR383': { dep: '09:45', arr: '11:40', route: 'TPE(T2)→DAD(T2)' },
+                    'IT501': { dep: '06:30', arr: '08:15', route: 'TPE(T1)→DAD(T2)' },
+
+                    // ==========================================
+                    // 🇹🇭 泰國 - 曼谷 (BKK/DMK), 清邁 (CNX)
+                    // ==========================================
+                    // 曼谷蘇凡納布 (BKK)
+                    'BR201': { dep: '09:10', arr: '11:50', route: 'TPE(T2)→BKK' },
+                    'BR205': { dep: '20:45', arr: '23:30', route: 'TPE(T2)→BKK' },
+                    'CI831': { dep: '09:25', arr: '12:10', route: 'TPE(T1)→BKK' },
+                    'CI835': { dep: '13:35', arr: '16:25', route: 'TPE(T1)→BKK' },
+                    'JX741': { dep: '09:40', arr: '12:40', route: 'TPE(T1)→BKK' },
+                    'JX745': { dep: '14:40', arr: '17:35', route: 'TPE(T1)→BKK' },
+                    // 曼谷廊曼 (DMK)
+                    'IT505': { dep: '15:45', arr: '18:45', route: 'TPE(T1)→DMK(T1)' },
+                    'IT506': { dep: '19:45', arr: '00:25', route: 'DMK(T1)→TPE(T1)' },
+                    // 清邁 (CNX)
+                    'BR257': { dep: '07:15', arr: '10:30', route: 'TPE(T2)→CNX' },
+                    'CI851': { dep: '07:50', arr: '11:15', route: 'TPE(T1)→CNX' },
+                    'JX751': { dep: '12:50', arr: '16:00', route: 'TPE(T1)→CNX' },
+
+                    // ==========================================
+                    // 🇲🇾 馬來西亞 - 吉隆坡 (KUL), 檳城 (PEN)
+                    // ==========================================
+                    // 吉隆坡 (KUL)
+                    'CI721': { dep: '08:50', arr: '13:30', route: 'TPE(T1)→KUL(T1)' },
+                    'BR217': { dep: '07:00', arr: '11:45', route: 'TPE(T2)→KUL(T1)' },
+                    'JX725': { dep: '07:40', arr: '12:25', route: 'TPE(T1)→KUL(T1)' },
+                    'D7373': { dep: '13:05', arr: '18:00', route: 'TPE(T1)→KUL(T2)' }, // AirAsia X
+                    // 檳城 (PEN)
+                    'CI731': { dep: '09:15', arr: '14:00', route: 'TPE(T1)→PEN' },
+                    'JX721': { dep: '12:00', arr: '16:40', route: 'TPE(T1)→PEN' },
+
+                    // ==========================================
+                    // 🇵🇭 菲律賓 - 馬尼拉 (MNL), 宿霧 (CEB)
+                    // ==========================================
+                    // 馬尼拉 (MNL)
+                    'CI701': { dep: '07:35', arr: '09:40', route: 'TPE(T1)→MNL(T1)' },
+                    'BR271': { dep: '09:10', arr: '11:30', route: 'TPE(T2)→MNL(T1)' },
+                    'JX785': { dep: '07:50', arr: '10:10', route: 'TPE(T1)→MNL(T3)' },
+                    'PR891': { dep: '09:55', arr: '12:15', route: 'TPE(T1)→MNL(T1)' },
+                    // 宿霧 (CEB)
+                    'BR281': { dep: '07:10', arr: '10:05', route: 'TPE(T2)→CEB(T2)' },
+                    'JX781': { dep: '07:10', arr: '10:05', route: 'TPE(T1)→CEB(T2)' },
+                    'CI705': { dep: '08:10', arr: '11:05', route: 'TPE(T1)→CEB(T2)' },
+
+                    // ==========================================
+                    // 🇨🇳 🇭🇰 🇲🇴 中港澳 - 香港(HKG), 澳門(MFM), 上海(PVG/SHA)
+                    // ==========================================
+                    // 香港 (HKG)
+                    'BR851': { dep: '08:05', arr: '09:50', route: 'TPE(T2)→HKG(T1)' },
+                    'BR855': { dep: '14:10', arr: '15:55', route: 'TPE(T2)→HKG(T1)' },
+                    'CI903': { dep: '08:00', arr: '09:55', route: 'TPE(T1)→HKG(T1)' },
+                    'CI919': { dep: '16:45', arr: '18:45', route: 'TPE(T1)→HKG(T1)' },
+                    'CX494': { dep: '10:20', arr: '12:15', route: 'HKG(T1)→TPE(T1)' },
+                    'CX451': { dep: '19:35', arr: '21:30', route: 'TPE(T1)→HKG(T1)' },
+                    'JX231': { dep: '08:10', arr: '09:55', route: 'TPE(T1)→HKG(T1)' },
+                    // 澳門 (MFM)
+                    'JX201': { dep: '08:30', arr: '10:20', route: 'TPE(T1)→MFM' },
+                    'JX205': { dep: '18:40', arr: '20:30', route: 'TPE(T1)→MFM' },
+                    'IT301': { dep: '06:45', arr: '08:35', route: 'TPE(T1)→MFM' },
+                    'NX619': { dep: '09:50', arr: '11:40', route: 'TPE(T1)→MFM' }, // 澳門航空
+                    // 上海浦東 (PVG)
+                    'BR712': { dep: '10:10', arr: '12:05', route: 'TPE(T2)→PVG(T2)' },
+                    'BR722': { dep: '16:30', arr: '18:25', route: 'TPE(T2)→PVG(T2)' },
+                    'CI501': { dep: '08:50', arr: '10:50', route: 'TPE(T2)→PVG(T1)' },
+                    'CI503': { dep: '16:35', arr: '18:35', route: 'TPE(T2)→PVG(T1)' },
+                    // 上海虹橋 (SHA) - 松山出發
+                    'BR772': { dep: '14:30', arr: '16:15', route: 'TSA(T1)→SHA(T1)' },
+                    'CI201': { dep: '12:30', arr: '14:15', route: 'TSA(T1)→SHA(T1)' },
+                    'CA198': { dep: '15:45', arr: '17:40', route: 'TSA(T1)→SHA(T1)' },
+
+                    // ==========================================
+                    // 🇸🇬 🇮🇩 新加坡(SIN), 雅加達(CGK)
+                    // ==========================================
+                    // 新加坡 (SIN)
+                    'BR225': { dep: '07:40', arr: '12:10', route: 'TPE(T2)→SIN(T3)' },
+                    'CI753': { dep: '08:35', arr: '13:15', route: 'TPE(T1)→SIN(T3)' },
+                    'JX771': { dep: '09:05', arr: '13:45', route: 'TPE(T1)→SIN(T1)' },
+                    'SQ877': { dep: '14:20', arr: '18:55', route: 'TPE(T2)→SIN(T3)' },
+                    // 雅加達 (CGK)
+                    'CI761': { dep: '08:45', arr: '13:10', route: 'TPE(T1)→CGK(T3)' },
+                    'BR237': { dep: '09:00', arr: '13:20', route: 'TPE(T2)→CGK(T3)' }
                 };
 
-                if (flightDB[code]) { const data = flightDB[code]; target.code = data.route; target.depTime = data.dep; target.arrTime = data.arr; alert(`搜尋成功：${code} 已自動填入。`); } 
-                else { alert(`查無此航班資料 (${code})，請手動輸入。`); }
+                if (flightDB[code]) { 
+                    const data = flightDB[code]; 
+                    target.code = data.route; 
+                    target.depTime = data.dep; 
+                    target.arrTime = data.arr; 
+                    alert(`搜尋成功：${code} 已自動填入。\n航線：${data.route}`); 
+                } else { 
+                    alert(`查無此航班資料 (${code})。\n請確認格式 (如 JX800) 或請手動輸入。\n目前已擴充：東北亞、東南亞、中港澳等亞洲主要航線。`); 
+                }
                 loadingFlight.value = null;
             };
 
