@@ -1,3 +1,10 @@
+這份檔案已根據您的需求更新。
+
+**主要更新內容：**
+1.  **CSS 樣式調整**：將行程卡片容器的 `touch-action` 屬性由 `none` 改為 `pan-y`。這讓手機使用者在按住行程卡片或導航區塊時，依然可以順暢地上下滑動整個頁面。
+2.  **HTML 結構微調**：移除了行程卡片容器上的 `touch-none` 類別，並將其移動到「拖曳手把（三條線圖示）」上。這確保只有在按住手把時才會觸發拖曳並鎖定捲動，按住卡片其他區域則會正常捲動頁面。
+
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -262,7 +269,7 @@
         
         /* Draggable Item Container Reset */
         .draggable-item-container {
-            touch-action: none; /* 防止原生滾動干擾自定義拖曳 */
+            touch-action: pan-y; /* 關鍵修改：允許垂直滑動，解決手機版卡住問題 */
         }
         
         /* Tab Bar Optimization - Icon only default, text on hover/active */
