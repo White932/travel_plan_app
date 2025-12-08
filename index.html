@@ -807,13 +807,13 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block uppercase tracking-wider">航線</label>
                                     <div class="min-w-0"> <!-- min-w-0 to prevent flex item overflow -->
                                         <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase">
                                     </div>
                                 </div>
                                 <div class="relative min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block uppercase tracking-wider">班次</label>
                                     <input v-model="infoData.flights.outbound.flightNum" placeholder="JX800" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 uppercase outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center">
                                     <button @click="fetchFlightInfo('outbound')" class="absolute right-2 bottom-1.5 w-7 h-7 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'outbound'" class="fas fa-spinner animate-spin text-xs"></i>
@@ -823,16 +823,16 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 relative">
                                 <div class="min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center">起飛</label>
-                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center uppercase tracking-wider">起飛</label>
+                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold font-mono text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
                                 </div>
                                 <!-- Arrow absolutely positioned to center -->
                                 <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 text-gray-300 z-10 pointer-events-none">
-                                    <i class="fas fa-arrow-right text-xs"></i>
+                                    <i class="fas fa-plane text-xs rotate-90"></i>
                                 </div>
                                 <div class="min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center">抵達</label>
-                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center uppercase tracking-wider">抵達</label>
+                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold font-mono text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
                                 </div>
                             </div>
                         </div>
@@ -845,13 +845,13 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block uppercase tracking-wider">航線</label>
                                     <div class="min-w-0">
                                         <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase">
                                     </div>
                                 </div>
                                 <div class="relative min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block uppercase tracking-wider">班次</label>
                                     <input v-model="infoData.flights.inbound.flightNum" placeholder="JX801" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 uppercase outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center">
                                     <button @click="fetchFlightInfo('inbound')" class="absolute right-2 bottom-1.5 w-7 h-7 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'inbound'" class="fas fa-spinner animate-spin text-xs"></i>
@@ -861,16 +861,16 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 relative">
                                 <div class="min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center">起飛</label>
-                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center uppercase tracking-wider">起飛</label>
+                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold font-mono text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
                                 </div>
                                 <!-- Arrow absolutely positioned to center -->
                                 <div class="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 text-gray-300 z-10 pointer-events-none">
-                                    <i class="fas fa-arrow-right text-xs"></i>
+                                    <i class="fas fa-plane text-xs rotate-90"></i>
                                 </div>
                                 <div class="min-w-0">
-                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center">抵達</label>
-                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
+                                    <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block text-center uppercase tracking-wider">抵達</label>
+                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-sm font-bold font-mono text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-10">
                                 </div>
                             </div>
                         </div>
