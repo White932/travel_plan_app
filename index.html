@@ -442,7 +442,7 @@
                                 <div class="pl-1">
                                     <div class="flex justify-between items-center mb-1">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">起點</span>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">出發</span>
                                             <select v-model="tripDays[currentDayIndex].hotelIndex" @change="updateFirstItemTransport" class="font-bold text-gray-800 text-sm bg-transparent border-none outline-none cursor-pointer w-full max-w-[150px] truncate">
                                                 <option v-for="(hotel, idx) in infoData.hotels" :key="idx" :value="idx">{{ hotel.name }}</option>
                                             </select>
@@ -475,9 +475,9 @@
                                 <div class="w-px h-3 bg-gray-200"></div>
                                 <!-- Time Input -->
                                 <div class="flex items-baseline gap-0.5 px-1">
-                                        <input type="number" min="0" :value="Math.floor((firstItemCommute || 0) / 60)" @input="updateFirstItemCommute($event.target.value, 'h')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                        <input type="number" min="0" :value="Math.floor((firstItemCommute || 0) / 60)" @input="updateFirstItemCommute($event.target.value, 'h')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                         <span class="text-[9px] text-gray-300 font-medium">h</span>
-                                        <input type="number" min="0" :value="(firstItemCommute || 0) % 60" @input="updateFirstItemCommute($event.target.value, 'm')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                        <input type="number" min="0" :value="(firstItemCommute || 0) % 60" @input="updateFirstItemCommute($event.target.value, 'm')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                         <span class="text-[9px] text-gray-300 font-medium">m</span>
                                 </div>
                                 <!-- Map Link -->
@@ -577,9 +577,9 @@
                                             
                                             <!-- Time Input -->
                                             <div class="flex items-baseline gap-0.5 px-1">
-                                                <input type="number" min="0" :value="Math.floor((item.commuteTime || 0) / 60)" @input="updateCommuteTime(item, $event.target.value, 'h')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                                <input type="number" min="0" :value="Math.floor((item.commuteTime || 0) / 60)" @input="updateCommuteTime(item, $event.target.value, 'h')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                                 <span class="text-[9px] text-gray-300 font-medium">h</span>
-                                                <input type="number" min="0" :value="(item.commuteTime || 0) % 60" @input="updateCommuteTime(item, $event.target.value, 'm')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                                <input type="number" min="0" :value="(item.commuteTime || 0) % 60" @input="updateCommuteTime(item, $event.target.value, 'm')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                                 <span class="text-[9px] text-gray-300 font-medium">m</span>
                                             </div>
 
@@ -627,9 +627,9 @@
 
                                     <!-- Time Input -->
                                     <div class="flex items-baseline gap-0.5 px-1">
-                                         <input type="number" min="0" :value="Math.floor((lastItemCommute || 0) / 60)" @input="updateLastItemCommute($event.target.value, 'h')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                         <input type="number" min="0" :value="Math.floor((lastItemCommute || 0) / 60)" @input="updateLastItemCommute($event.target.value, 'h')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                          <span class="text-[9px] text-gray-300 font-medium">h</span>
-                                         <input type="number" min="0" :value="(lastItemCommute || 0) % 60" @input="updateLastItemCommute($event.target.value, 'm')" class="w-4 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
+                                         <input type="number" min="0" :value="(lastItemCommute || 0) % 60" @input="updateLastItemCommute($event.target.value, 'm')" class="w-7 md:w-5 bg-transparent text-center text-xs font-mono font-bold text-gray-600 outline-none p-0" placeholder="0">
                                          <span class="text-[9px] text-gray-300 font-medium">m</span>
                                     </div>
 
@@ -1895,7 +1895,7 @@
                 dragState, startItemDrag, itineraryContainer, infoData, addInfoItem, removeInfoItem, calculateDuration, autoFillPlace, fetchFlightInfo, loadingFlight,
                 firstItemCommute, firstItemMode, updateFirstItemTransport, formatDuration, checkOverlap, getSelectedHotelAddress,
                 lastItemCommute, lastItemMode, updateLastItemTransport, updateLastItemCommute,
-                shoppingList, showShoppingModal, isEditingShopping, shoppingForm, openShoppingModal, editShoppingItem, saveShoppingItem, deleteShoppingItem, toggleBought, handleShoppingImageUpload, updateFirstItemCommute
+                shoppingList, showShoppingModal, isEditingShopping, shoppingForm, openShoppingModal, editShoppingItem, saveShoppingItem, deleteShoppingItem, toggleBought, handleShoppingImageUpload, updateFirstItemCommute, updateLastItemCommute
             };
         }
     }).mount('#app');
