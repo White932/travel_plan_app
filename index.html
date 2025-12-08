@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>東京旅遊助手 Ultimate Precision</title>
+    <title>旅遊助手 Pro/title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 -->
@@ -936,7 +936,7 @@
                                     <input v-model="car.phone" class="bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="電話">
                                 </div>
                                 <div class="relative">
-                                    <i class="fas fa-map-pin text-gray-400 absolute left-4 top-4 text-xs"></i>
+                                    <i class="fas fa-map-marker-alt text-gray-400 absolute left-4 top-4 text-xs"></i>
                                     <textarea v-model="car.address" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none" placeholder="取車/還車地址"></textarea>
                                     <button v-if="car.address" @click="openMap(car.address)" class="absolute right-2 bottom-2 w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="fas fa-location-arrow text-xs"></i></button>
                                 </div>
