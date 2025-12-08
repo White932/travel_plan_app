@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>東京旅遊助手 Ultimate Precision</title>
+    <title>旅遊小幫手 Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 -->
@@ -327,7 +327,7 @@
                             {{ tripTitle }} 
                             <i class="fas fa-pen text-[10px] text-gray-300 group-hover:text-primary"></i>
                         </h1>
-                        <p class="text-[10px] text-gray-500 tracking-wide">{{ totalDays }} 天行程 • 東京</p>
+                        <p class="text-[10px] text-gray-500 tracking-wide">{{ totalDays }} 天遊</p>
                     </div>
                 </div>
                  <button @click="showDayManager = true" class="text-gray-400 hover:text-primary transition-colors p-1">
@@ -426,7 +426,7 @@
                                  :style="{ borderLeftWidth: '4px', borderLeftColor: appSettings.themeColor }">
                                 <div class="pl-1 flex justify-between items-center">
                                     <div>
-                                        <h3 class="font-bold text-gray-800 text-sm">抵達東京 <span class="text-xs font-normal text-gray-500">({{ infoData.flights.outbound.flightNum }})</span></h3>
+                                        <h3 class="font-bold text-gray-800 text-sm">抵達 <span class="text-xs font-normal text-gray-500">({{ infoData.flights.outbound.flightNum }})</span></h3>
                                         <div class="text-[10px] text-gray-400 mt-0.5 truncate">{{ infoData.flights.outbound.code }}</div>
                                     </div>
                                     <div class="font-mono text-xs font-bold px-2 py-1 rounded" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">
@@ -452,7 +452,7 @@
                                 <div class="pl-1">
                                     <div class="flex justify-between items-center mb-1">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">起點</span>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">出發</span>
                                             <select v-model="tripDays[currentDayIndex].hotelIndex" @change="updateFirstItemTransport" class="font-bold text-gray-800 text-sm bg-transparent border-none outline-none cursor-pointer w-full max-w-[150px] truncate">
                                                 <option v-for="(hotel, idx) in infoData.hotels" :key="idx" :value="idx">{{ hotel.name }}</option>
                                             </select>
@@ -1024,7 +1024,7 @@
     <!-- Settings Modal -->
     <div v-if="showSettingsModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="text-lg font-bold mb-4">介面與導航設定</h3>
+            <h3 class="text-lg font-bold mb-4">客制化界面與主題</h3>
             <div class="space-y-6">
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-bold uppercase">主題顏色 (Palette)</label>
@@ -1059,7 +1059,7 @@
                     </div>
                 </div>
             </div>
-            <button @click="saveSettings" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">儲存並應用</button>
+            <button @click="saveSettings" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">確認</button>
         </div>
     </div>
 
