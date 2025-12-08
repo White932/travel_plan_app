@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>旅遊小助手 Pro</title>
+    <title>旅遊小幫手 Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue 3 -->
@@ -450,13 +450,16 @@
                             <div class="flex-1 glass-card theme-glow card-scroll-safe rounded-2xl shadow-sm p-3 mb-1 relative overflow-hidden"
                                  :style="{ borderLeftWidth: '4px', borderLeftColor: appSettings.themeColor }">
                                 <div class="pl-1">
-                                    <div class="flex justify-between items-center">
+                                    <div class="flex justify-between items-center mb-1">
                                         <div class="flex items-center gap-2">
                                             <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">起點</span>
                                             <select v-model="tripDays[currentDayIndex].hotelIndex" @change="updateFirstItemTransport" class="font-bold text-gray-800 text-sm bg-transparent border-none outline-none cursor-pointer w-full max-w-[150px] truncate">
                                                 <option v-for="(hotel, idx) in infoData.hotels" :key="idx" :value="idx">{{ hotel.name }}</option>
                                             </select>
                                         </div>
+                                    </div>
+                                    <div v-if="getSelectedHotelAddress()" class="text-[10px] text-gray-400 flex items-center gap-1 mt-1">
+                                        <!-- Removed address display -->
                                     </div>
                                 </div>
                             </div>
@@ -805,9 +808,11 @@
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
-                                    <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <div class="min-w-0"> <!-- min-w-0 to prevent flex item overflow -->
+                                        <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    </div>
                                 </div>
-                                <div class="relative">
+                                <div class="relative min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
                                     <input v-model="infoData.flights.outbound.flightNum" placeholder="JX800" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                     <button @click="fetchFlightInfo('outbound')" class="absolute right-2 bottom-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
@@ -816,15 +821,15 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex items-end gap-2">
-                                <div class="flex-1">
+                            <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
+                                <div class="min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">起飛</label>
-                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-center">
                                 </div>
-                                <div class="pb-4 text-gray-300"><i class="fas fa-arrow-right"></i></div>
-                                <div class="flex-1">
+                                <div class="text-gray-300 mb-3"><i class="fas fa-arrow-right"></i></div>
+                                <div class="min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">抵達</label>
-                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-center">
                                 </div>
                             </div>
                         </div>
@@ -838,9 +843,11 @@
                             <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
-                                    <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <div class="min-w-0">
+                                        <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    </div>
                                 </div>
-                                <div class="relative">
+                                <div class="relative min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
                                     <input v-model="infoData.flights.inbound.flightNum" placeholder="JX801" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                     <button @click="fetchFlightInfo('inbound')" class="absolute right-2 bottom-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
@@ -849,15 +856,15 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex items-end gap-2">
-                                <div class="flex-1">
+                            <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
+                                <div class="min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">起飛</label>
-                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-center">
                                 </div>
-                                <div class="pb-4 text-gray-300"><i class="fas fa-arrow-right"></i></div>
-                                <div class="flex-1">
+                                <div class="text-gray-300 mb-3"><i class="fas fa-arrow-right"></i></div>
+                                <div class="min-w-0">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">抵達</label>
-                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-center">
                                 </div>
                             </div>
                         </div>
