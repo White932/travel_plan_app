@@ -816,40 +816,40 @@
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線 Route</label>
                                     <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" 
-                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 text-center uppercase h-11">
+                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 text-center uppercase h-10">
                                 </div>
                                 <!-- 班次 (含搜尋按鈕) -->
                                 <div class="relative">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次 Flight No.</label>
                                     <input v-model="infoData.flights.outbound.flightNum" placeholder="JX800" 
-                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 pr-10 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 text-center uppercase h-11">
-                                    <button @click="fetchFlightInfo('outbound')" class="absolute right-1.5 bottom-1.5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all">
+                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 pr-9 text-sm font-bold text-gray-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 text-center uppercase h-10">
+                                    <button @click="fetchFlightInfo('outbound')" class="absolute right-1 bottom-1 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'outbound'" class="fas fa-spinner animate-spin text-xs"></i>
                                         <i v-else class="fas fa-search text-xs"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- 第二排：時間 (視覺化對齊) -->
-                            <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-100">
-                                <div class="flex items-end justify-between gap-2">
-                                    <!-- 起飛時間 -->
-                                    <div class="flex-1 min-w-0">
-                                        <label class="text-[10px] text-gray-400 font-bold block text-center mb-1">起飛 Dep</label>
+                            <!-- 第二排：時間 (修正手機跑版：整合式設計) -->
+                            <div class="bg-gray-50/50 rounded-xl p-2 sm:p-3 border border-gray-100">
+                                <div class="flex items-center justify-between gap-2">
+                                    <!-- 起飛時間 (整合框) -->
+                                    <div class="flex-1 bg-white border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm h-16 min-w-0">
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide leading-none mb-1">起飛 Dep</span>
                                         <input type="time" v-model="infoData.flights.outbound.depTime" 
-                                               class="w-full bg-white border border-gray-200 rounded-xl py-2 px-1 text-base font-black text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all text-center h-12">
+                                               class="w-full bg-transparent p-0 text-xl sm:text-2xl font-black text-gray-800 text-center outline-none border-none appearance-none h-8">
                                     </div>
                                     
                                     <!-- 中間箭頭 -->
-                                    <div class="flex flex-col items-center justify-end pb-3 text-gray-300">
+                                    <div class="text-gray-300 flex-shrink-0 w-6 flex justify-center">
                                         <i class="fas fa-arrow-right text-sm"></i>
                                     </div>
 
-                                    <!-- 抵達時間 -->
-                                    <div class="flex-1 min-w-0">
-                                        <label class="text-[10px] text-gray-400 font-bold block text-center mb-1">抵達 Arr</label>
+                                    <!-- 抵達時間 (整合框) -->
+                                    <div class="flex-1 bg-white border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm h-16 min-w-0">
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide leading-none mb-1">抵達 Arr</span>
                                         <input type="time" v-model="infoData.flights.outbound.arrTime" 
-                                               class="w-full bg-white border border-gray-200 rounded-xl py-2 px-1 text-base font-black text-gray-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all text-center h-12">
+                                               class="w-full bg-transparent p-0 text-xl sm:text-2xl font-black text-gray-800 text-center outline-none border-none appearance-none h-8">
                                     </div>
                                 </div>
                             </div>
@@ -871,40 +871,40 @@
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線 Route</label>
                                     <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" 
-                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase h-11">
+                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase h-10">
                                 </div>
                                 <!-- 班次 (含搜尋按鈕) -->
                                 <div class="relative">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次 Flight No.</label>
                                     <input v-model="infoData.flights.inbound.flightNum" placeholder="JX801" 
-                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 pr-10 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase h-11">
-                                    <button @click="fetchFlightInfo('inbound')" class="absolute right-1.5 bottom-1.5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
+                                           class="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 pr-9 text-sm font-bold text-gray-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-gray-300 text-center uppercase h-10">
+                                    <button @click="fetchFlightInfo('inbound')" class="absolute right-1 bottom-1 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'inbound'" class="fas fa-spinner animate-spin text-xs"></i>
                                         <i v-else class="fas fa-search text-xs"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- 第二排：時間 (視覺化對齊) -->
-                            <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-100">
-                                <div class="flex items-end justify-between gap-2">
-                                    <!-- 起飛時間 -->
-                                    <div class="flex-1 min-w-0">
-                                        <label class="text-[10px] text-gray-400 font-bold block text-center mb-1">起飛 Dep</label>
+                            <!-- 第二排：時間 (修正手機跑版：整合式設計) -->
+                            <div class="bg-gray-50/50 rounded-xl p-2 sm:p-3 border border-gray-100">
+                                <div class="flex items-center justify-between gap-2">
+                                    <!-- 起飛時間 (整合框) -->
+                                    <div class="flex-1 bg-white border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm h-16 min-w-0">
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide leading-none mb-1">起飛 Dep</span>
                                         <input type="time" v-model="infoData.flights.inbound.depTime" 
-                                               class="w-full bg-white border border-gray-200 rounded-xl py-2 px-1 text-base font-black text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-12">
+                                               class="w-full bg-transparent p-0 text-xl sm:text-2xl font-black text-gray-800 text-center outline-none border-none appearance-none h-8">
                                     </div>
                                     
                                     <!-- 中間箭頭 -->
-                                    <div class="flex flex-col items-center justify-end pb-3 text-gray-300">
+                                    <div class="text-gray-300 flex-shrink-0 w-6 flex justify-center">
                                         <i class="fas fa-arrow-right text-sm"></i>
                                     </div>
 
-                                    <!-- 抵達時間 -->
-                                    <div class="flex-1 min-w-0">
-                                        <label class="text-[10px] text-gray-400 font-bold block text-center mb-1">抵達 Arr</label>
+                                    <!-- 抵達時間 (整合框) -->
+                                    <div class="flex-1 bg-white border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm h-16 min-w-0">
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wide leading-none mb-1">抵達 Arr</span>
                                         <input type="time" v-model="infoData.flights.inbound.arrTime" 
-                                               class="w-full bg-white border border-gray-200 rounded-xl py-2 px-1 text-base font-black text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center h-12">
+                                               class="w-full bg-transparent p-0 text-xl sm:text-2xl font-black text-gray-800 text-center outline-none border-none appearance-none h-8">
                                     </div>
                                 </div>
                             </div>
