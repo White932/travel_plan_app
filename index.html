@@ -450,16 +450,13 @@
                             <div class="flex-1 glass-card theme-glow card-scroll-safe rounded-2xl shadow-sm p-3 mb-1 relative overflow-hidden"
                                  :style="{ borderLeftWidth: '4px', borderLeftColor: appSettings.themeColor }">
                                 <div class="pl-1">
-                                    <div class="flex justify-between items-center mb-1">
+                                    <div class="flex justify-between items-center">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">出發</span>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold" :style="{ backgroundColor: appSettings.themeColor + '15', color: appSettings.themeColor }">起點</span>
                                             <select v-model="tripDays[currentDayIndex].hotelIndex" @change="updateFirstItemTransport" class="font-bold text-gray-800 text-sm bg-transparent border-none outline-none cursor-pointer w-full max-w-[150px] truncate">
                                                 <option v-for="(hotel, idx) in infoData.hotels" :key="idx" :value="idx">{{ hotel.name }}</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div v-if="getSelectedHotelAddress()" class="text-[10px] text-gray-400 flex items-center gap-1 mt-1">
-                                        <!-- Removed address display -->
                                     </div>
                                 </div>
                             </div>
@@ -800,19 +797,19 @@
                     </h3>
                     <div class="space-y-4">
                         <!-- Outbound -->
-                        <div class="glass-card rounded-2xl p-5 card-scroll-safe ring-1 ring-black/5">
+                        <div class="glass-card rounded-2xl p-4 sm:p-5 card-scroll-safe ring-1 ring-black/5">
                             <div class="flex items-center gap-2 mb-4 text-primary font-bold border-b border-gray-100 pb-2">
                                 <i class="fas fa-plane-departure text-xl"></i> 
                                 <span>去程 (Outbound)</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
-                                    <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <input v-model="infoData.flights.outbound.code" placeholder="TPE-NRT" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                 </div>
                                 <div class="relative">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
-                                    <input v-model="infoData.flights.outbound.flightNum" placeholder="JX800" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <input v-model="infoData.flights.outbound.flightNum" placeholder="JX800" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                     <button @click="fetchFlightInfo('outbound')" class="absolute right-2 bottom-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'outbound'" class="fas fa-spinner animate-spin"></i>
                                         <i v-else class="fas fa-search"></i>
@@ -822,30 +819,30 @@
                             <div class="flex items-end gap-2">
                                 <div class="flex-1">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">起飛</label>
-                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.outbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                                 </div>
                                 <div class="pb-4 text-gray-300"><i class="fas fa-arrow-right"></i></div>
                                 <div class="flex-1">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">抵達</label>
-                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.outbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Inbound -->
-                        <div class="glass-card rounded-2xl p-5 card-scroll-safe ring-1 ring-black/5">
+                        <div class="glass-card rounded-2xl p-4 sm:p-5 card-scroll-safe ring-1 ring-black/5">
                             <div class="flex items-center gap-2 mb-4 text-blue-500 font-bold border-b border-gray-100 pb-2">
                                 <i class="fas fa-plane-arrival text-xl"></i> 
                                 <span>回程 (Inbound)</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">航線</label>
-                                    <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <input v-model="infoData.flights.inbound.code" placeholder="NRT-TPE" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                 </div>
                                 <div class="relative">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">班次</label>
-                                    <input v-model="infoData.flights.inbound.flightNum" placeholder="JX801" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
+                                    <input v-model="infoData.flights.inbound.flightNum" placeholder="JX801" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold uppercase outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-gray-300">
                                     <button @click="fetchFlightInfo('inbound')" class="absolute right-2 bottom-2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-white rounded-lg transition-all">
                                         <i v-if="loadingFlight === 'inbound'" class="fas fa-spinner animate-spin"></i>
                                         <i v-else class="fas fa-search"></i>
@@ -855,12 +852,12 @@
                             <div class="flex items-end gap-2">
                                 <div class="flex-1">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">起飛</label>
-                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.inbound.depTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                                 </div>
                                 <div class="pb-4 text-gray-300"><i class="fas fa-arrow-right"></i></div>
                                 <div class="flex-1">
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">抵達</label>
-                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                                    <input type="time" v-model="infoData.flights.inbound.arrTime" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                                 </div>
                             </div>
                         </div>
@@ -877,24 +874,26 @@
                         <button @click="addInfoItem('hotels')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-500 w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm"><i class="fas fa-plus text-xs"></i></button>
                     </div>
                     <div class="space-y-4">
-                        <div v-for="(hotel, idx) in infoData.hotels" :key="idx" class="glass-card rounded-2xl p-5 relative group card-scroll-safe ring-1 ring-black/5">
+                        <div v-for="(hotel, idx) in infoData.hotels" :key="idx" class="glass-card rounded-2xl p-4 sm:p-5 relative group card-scroll-safe ring-1 ring-black/5">
                              <button @click="removeInfoItem('hotels', idx)" class="absolute top-3 right-3 text-gray-300 hover:text-red-400 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full"><i class="fas fa-times"></i></button>
                              <div class="space-y-4">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">飯店名稱</label>
                                     <div class="flex gap-2">
-                                        <input v-model="hotel.name" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-bold text-gray-800 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="輸入名稱">
+                                        <div class="flex-1 min-w-0">
+                                            <input v-model="hotel.name" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold text-gray-800 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="輸入名稱">
+                                        </div>
                                         <button @click="autoFillPlace(hotel, 'hotel')" class="w-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-colors flex-shrink-0"><i class="fas fa-magic"></i></button>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 gap-4">
                                     <div class="relative">
                                         <i class="fas fa-phone text-gray-400 absolute left-4 top-4 text-xs"></i>
-                                        <input v-model="hotel.phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="電話號碼">
+                                        <input v-model="hotel.phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="電話號碼">
                                     </div>
                                     <div class="relative">
                                         <i class="fas fa-map-marker-alt text-gray-400 absolute left-4 top-4 text-xs"></i>
-                                        <textarea v-model="hotel.address" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none" placeholder="地址"></textarea>
+                                        <textarea v-model="hotel.address" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none" placeholder="地址"></textarea>
                                         <button v-if="hotel.address" @click="openMap(hotel.address)" class="absolute right-2 bottom-2 w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="fas fa-location-arrow text-xs"></i></button>
                                     </div>
                                 </div>
@@ -913,23 +912,25 @@
                         <button @click="addInfoItem('cars')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-500 w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm"><i class="fas fa-plus text-xs"></i></button>
                     </div>
                     <div class="space-y-4">
-                        <div v-for="(car, idx) in infoData.cars" :key="idx" class="glass-card rounded-2xl p-5 relative group card-scroll-safe ring-1 ring-black/5">
+                        <div v-for="(car, idx) in infoData.cars" :key="idx" class="glass-card rounded-2xl p-4 sm:p-5 relative group card-scroll-safe ring-1 ring-black/5">
                              <button @click="removeInfoItem('cars', idx)" class="absolute top-3 right-3 text-gray-300 hover:text-red-400 w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full"><i class="fas fa-times"></i></button>
                              <div class="space-y-4">
                                 <div>
                                     <label class="text-[10px] text-gray-400 font-bold ml-1 mb-1 block">租車公司</label>
                                     <div class="flex gap-2">
-                                        <input v-model="car.company" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-base font-bold text-gray-800 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="公司名稱">
+                                        <div class="flex-1 min-w-0">
+                                            <input v-model="car.company" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base font-bold text-gray-800 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="公司名稱">
+                                        </div>
                                         <button @click="autoFillPlace(car, 'car')" class="w-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center hover:bg-primary hover:text-white transition-colors flex-shrink-0"><i class="fas fa-magic"></i></button>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <input v-model="car.refNo" class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="預約編號/車型">
-                                    <input v-model="car.phone" class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="電話">
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                                    <input v-model="car.refNo" class="bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="預約編號/車型">
+                                    <input v-model="car.phone" class="bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" placeholder="電話">
                                 </div>
                                 <div class="relative">
                                     <i class="fas fa-map-pin text-gray-400 absolute left-4 top-4 text-xs"></i>
-                                    <textarea v-model="car.address" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none" placeholder="取車/還車地址"></textarea>
+                                    <textarea v-model="car.address" rows="2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pl-10 text-base outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none" placeholder="取車/還車地址"></textarea>
                                     <button v-if="car.address" @click="openMap(car.address)" class="absolute right-2 bottom-2 w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors shadow-sm"><i class="fas fa-location-arrow text-xs"></i></button>
                                 </div>
                              </div>
@@ -1010,7 +1011,7 @@
                     </div>
                 </div>
             </div>
-            <button @click="saveSettings" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">確認</button>
+            <button @click="saveSettings" class="w-full bg-gray-100 mt-6 py-2 rounded-lg font-bold">儲存並應用</button>
         </div>
     </div>
 
@@ -1117,6 +1118,23 @@
                 <textarea v-model="expenseForm.note" class="w-full bg-gray-50 border rounded-xl p-3 h-20 text-sm" placeholder="備註..."></textarea>
                 <button @click="saveExpense" class="w-full bg-secondary text-white py-3 rounded-xl font-bold mt-2">儲存</button>
                 <button @click="showExpenseModal = false" class="w-full text-gray-400 py-2">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Item Modal -->
+    <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="text-lg font-bold mb-4">{{ isEditingShopping ? '編輯商品' : '新增商品' }}</h3>
+            <div class="space-y-4">
+                <input v-model="shoppingForm.name" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 outline-none focus:border-primary" placeholder="商品名稱">
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-primary relative overflow-hidden group">
+                    <input type="file" accept="image/*" @change="handleShoppingImageUpload" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                    <div v-if="shoppingForm.image" class="relative w-full h-32"><img :src="shoppingForm.image" class="w-full h-full object-contain"><div class="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-camera mr-2"></i> 更換</div></div>
+                    <div v-else class="text-gray-400 py-4"><i class="fas fa-camera text-3xl mb-2"></i><p class="text-xs">點擊上傳圖片</p></div>
+                </div>
+                <button @click="saveShoppingItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold">儲存</button>
+                <button @click="showShoppingModal = false" class="w-full text-gray-400 py-2">取消</button>
             </div>
         </div>
     </div>
