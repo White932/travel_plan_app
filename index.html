@@ -274,7 +274,77 @@
         .nav-glow {
             box-shadow: 0 2px 10px -2px var(--theme-shadow);
         }
+	/* === 天氣卡片液態特效 (Liquid Weather Styles) === */
+	.weather-card-liquid {
+    	position: relative;
+    	overflow: hidden;
+    	border-radius: 24px;
+    	background: rgba(255, 255, 255, 0.1);
+    	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    	backdrop-filter: blur(20px);
+    	-webkit-backdrop-filter: blur(20px);
+    	transition: all 0.5s ease;
+	}
 
+	/* 液態背景層 */
+	.weather-blobs {
+    	position: absolute;
+    	inset: -50%;
+    	width: 200%;
+    	height: 200%;
+    	filter: blur(50px);
+    	z-index: 0;
+    	pointer-events: none;
+	}
+
+	.blob {
+    	position: absolute;
+    	border-radius: 50%;
+    	opacity: 0.8;
+    	animation: liquid-move 10s infinite ease-in-out alternate;
+	}
+
+	.blob:nth-child(1) { width: 50%; height: 50%; top: 20%; left: 20%; animation-duration: 12s; }
+	.blob:nth-child(2) { width: 40%; height: 40%; top: 40%; right: 20%; animation-duration: 9s; animation-direction: reverse; }
+	.blob:nth-child(3) { width: 35%; height: 35%; bottom: 10%; left: 30%; animation-duration: 14s; }
+
+	/* 天氣配色定義 */
+	/* 晴天: 金橘色系 */
+	.weather-sunny .blob:nth-child(1) { background: #FF9F43; }
+	.weather-sunny .blob:nth-child(2) { background: #FF6B6B; }
+	.weather-sunny .blob:nth-child(3) { background: #Feca57; }
+
+	/* 多雲: 紫藍色系 */
+	.weather-cloudy .blob:nth-child(1) { background: #a29bfe; }
+	.weather-cloudy .blob:nth-child(2) { background: #74b9ff; }
+	.weather-cloudy .blob:nth-child(3) { background: #dfe6e9; opacity: 0.5; }
+
+	/* 雨天: 深藍青色系 */
+	.weather-rainy .blob:nth-child(1) { background: #0984e3; }
+	.weather-rainy .blob:nth-child(2) { background: #00cec9; }
+	.weather-rainy .blob:nth-child(3) { background: #6c5ce7; }
+
+	/* 陰天/預設: 灰階銀色系 */
+	.weather-gray .blob:nth-child(1) { background: #b2bec3; }
+	.weather-gray .blob:nth-child(2) { background: #636e72; }
+	.weather-gray .blob:nth-child(3) { background: #dfe6e9; }
+
+	@keyframes liquid-move {
+    	0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    	33% { transform: translate(30px, -50px) scale(1.1) rotate(20deg); }
+    	66% { transform: translate(-20px, 20px) scale(0.9) rotate(-10deg); }
+    	100% { transform: translate(10px, -10px) scale(1.05) rotate(5deg); }
+	}
+
+	/* 玻璃質感紋理 (Noise Texture) */
+	.weather-texture {
+    	position: absolute;
+    	inset: 0;
+    	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%	3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' 	height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+    	z-index: 1;
+    	opacity: 0.3;
+    	mix-blend-mode: overlay;
+	}
     </style>
     <script>
         tailwind.config = {
@@ -379,36 +449,66 @@
                     </button>
                 </div>
 
-                <!-- Weather Card -->
-                <div :class="['w-full rounded-2xl p-4 text-white shadow-lg mb-4 flex justify-between items-center transition-all relative overflow-hidden', getWeatherClass(currentWeather)]">
-                    <div class="absolute inset-0 bg-black/10"></div>
-                    <div class="flex-1 min-w-0 relative z-10"> 
-                        <div class="flex flex-wrap items-center gap-2 mb-2">
-                            <i class="fas fa-map-marker-alt text-xs opacity-80"></i>
-                            <span class="text-sm font-bold opacity-90">東京</span>
-                            <div class="border-l pl-2 ml-1 border-white/30 flex items-center flex-1">
-                                <input type="date" v-model="tripDays[currentDayIndex].date" @change="onDateChange(currentDayIndex)" class="weather-date-input bg-transparent text-white text-sm focus:outline-none w-full">
-                            </div>
-                        </div>
-                        <div class="flex items-end gap-3">
-                            <span class="text-4xl font-bold">{{ currentWeather.maxTemp }}°</span>
-                            <div class="flex flex-col mb-1">
-                                <span class="text-xs opacity-80">{{ currentWeather.minTemp }}°</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 mt-2">
-                            <p class="text-sm font-medium opacity-90">{{ currentWeather.desc }}</p>
-                            <div v-if="currentWeather.rainProb !== null" class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs">
-                                <i class="fas fa-umbrella text-[10px]"></i>
-                                <span>{{ currentWeather.rainProb }}%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-5xl opacity-90 pl-2 relative z-10">
-                        <i :class="currentWeather.icon"></i>
+                <!-- Weather Card (Liquid Glass Style) -->
+<div :class="['w-full h-40 weather-card-liquid mb-4 transition-all relative', getWeatherLiquidClass(currentWeather)]">
+    
+    <!-- 動態液態背景層 -->
+    <div class="weather-blobs">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+    
+    <!-- 紋理層 -->
+    <div class="weather-texture"></div>
+
+    <!-- 內容層 (前景) -->
+    <div class="absolute inset-0 p-5 flex justify-between items-center z-10 text-white">
+        <!-- 左側資訊 -->
+        <div class="flex-1 min-w-0 flex flex-col justify-between h-full drop-shadow-md"> 
+            <!-- 地點與日期 -->
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 border border-white/20">
+                        <i class="fas fa-map-marker-alt text-xs"></i>
+                        <span class="text-xs font-bold tracking-wide">東京</span>
                     </div>
                 </div>
+                <!-- 日期選擇器 -->
+                <div class="relative inline-block group">
+                    <input type="date" v-model="tripDays[currentDayIndex].date" @change="onDateChange(currentDayIndex)" 
+                           class="weather-date-input bg-transparent text-white text-lg font-bold focus:outline-none w-auto cursor-pointer relative z-20">
+                    <div class="absolute bottom-0 left-0 w-full h-0.5 bg-white/50 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                </div>
+            </div>
 
+            <!-- 天氣狀態文字 -->
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-bold tracking-wider bg-black/10 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                    {{ currentWeather.desc }}
+                </span>
+                <div v-if="currentWeather.rainProb !== null" class="flex items-center gap-1 text-sm font-medium text-blue-100">
+                    <i class="fas fa-umbrella text-xs"></i>
+                    <span>{{ currentWeather.rainProb }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側溫度與圖示 -->
+        <div class="text-right flex flex-col items-end justify-center drop-shadow-lg">
+            <div class="text-6xl text-white/90 relative">
+                <i :class="currentWeather.icon" class="filter drop-shadow-lg"></i>
+            </div>
+            <div class="flex items-start mt-[-5px]">
+                <span class="text-5xl font-black tracking-tighter">{{ currentWeather.maxTemp }}°</span>
+                <div class="flex flex-col items-end ml-2 mt-2">
+                    <span class="text-sm opacity-80 font-medium">High</span>
+                    <span class="text-xl font-bold opacity-90">{{ currentWeather.minTemp }}°</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                 <!-- Timeline Container -->
                 <div class="space-y-0 relative" ref="itineraryContainer">
                     
@@ -1544,7 +1644,15 @@
                 if (code <= 1) { icon = 'fas fa-sun'; desc = '晴朗'; } else if (code <= 3) { icon = 'fas fa-cloud-sun'; desc = '多雲'; } else if (code <= 82) { icon = 'fas fa-cloud-rain'; desc = '有雨'; }
                 return { maxTemp: max, minTemp: min, rainProb: rain, icon, desc, code };
             });
-            const getWeatherClass = (w) => (w.code <= 1 || w.code === 999) ? 'weather-gradient-sunny' : (w.code <= 3 ? 'weather-gradient-cloudy' : 'weather-gradient-rainy');
+            //const getWeatherClass = (w) => (w.code <= 1 || w.code === 999) ? 'weather-gradient-sunny' : (w.code <= 3 ? 'weather-gradient-cloudy' : 'weather-gradient-rainy');
+		// ★ 新增這個函式 ★
+	 const getWeatherLiquidClass = (w) => {
+    			// 根據天氣代碼返回對應的 CSS class
+    			if (w.code <= 1 || w.code === 999) return 'weather-sunny'; // 晴朗/預設
+    			if (w.code <= 3) return 'weather-cloudy'; // 多雲
+    			if (w.code <= 82) return 'weather-rainy'; // 雨天
+    			return 'weather-gray'; // 其他 (雪/霧等)
+	};
 
             const saveSettings = () => { saveData(true); showSettingsModal.value = false; };
             
@@ -1967,7 +2075,7 @@
                 activeTab, tripTitle, isEditingTitle, editTitle, saveTitle, titleInput, tripDays, currentDayIndex, totalDays, addDay, deleteDay, showDayManager,
                 currentItinerary, showItineraryModal, isEditing, form, openAddModal, editItem, saveItem, deleteItem, openMap, getMapEmbedUrl,
                 calculateEndTime, getGoogleMapsDirectionUrl, setTransportMode, updateCommuteTime, travelers, expenses, totalExpenseDisplay, showExpenseModal, showTravelerModal, showSettlement,
-                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements,  openSettlementModal, currentWeather, getWeatherClass, onDateChange,
+                expenseForm, saveExpense, deleteExpense, addTraveler, newTravelerName, settlements,  openSettlementModal, currentWeather, onDateChange, getWeatherLiquidClass,
                 dayDragState, startDayDrag, dayListContainer, draggingIndex, exchangeRates, convertCurrency, getCurrencySymbol, displayCurrency, getExchangeRateText,
                 openAddExpenseModal, openEditExpense, toggleInvolved, isEditingExpense, currencies, tempDurationH, tempDurationM, validateDuration, getCategoryIcon,
                 showSettingsModal, appSettings, presetColors, presetBgs, cssVars, getNoteStyle, overlayStyle, handleFileUpload, saveSettings,
