@@ -284,6 +284,13 @@
     	backdrop-filter: blur(20px);
     	-webkit-backdrop-filter: blur(20px);
     	transition: all 0.5s ease;
+		/* ★★★ 關鍵修正：強制手機版裁切圓角 ★★★ */
+    	/* 這行能解決「圓角包不住直角背景」的問題 */
+    	-webkit-mask-image: -webkit-radial-gradient(white, black);
+    
+    	/* 額外防護：強制硬體加速層級，避免動畫閃爍 */
+    	transform: translateZ(0); 
+    	isolation: isolate;
 	}
 
 	/* 液態背景層 */
