@@ -1518,14 +1518,14 @@
                 title: '', amount: '', payer: '我', currency: 'JPY', 
                 involved: [], category: 'food', date: '', paymentMethod: 'cash', note: '' 
             });
-	   const sortedExpenses = computed(() => {
-    return [...expenses.value].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
+	   		const sortedExpenses = computed(() => {
+    		return [...expenses.value].sort((a, b) => {
+        	const dateA = new Date(a.date);
+        	const dateB = new Date(b.date);
         // 先比日期 (大到小)，日期一樣比 ID (大到小，即新增時間)
-        return (dateA - dateB) || (a.id - b.id);
-    });
-});
+        	return (dateA - dateB) || (a.id - b.id);
+		   		 });
+			});
 
             // ==========================================
             // Firebase 資料同步邏輯
@@ -1674,16 +1674,16 @@
                 let icon = 'fas fa-sun'; let desc = '晴朗';
                 if (code <= 1) { icon = 'fas fa-sun'; desc = '晴朗'; } else if (code <= 3) { icon = 'fas fa-cloud-sun'; desc = '多雲'; } else if (code <= 82) { icon = 'fas fa-cloud-rain'; desc = '有雨'; }
                 return { maxTemp: max, minTemp: min, rainProb: rain, icon, desc, code };
-            });
+            	});
             //const getWeatherClass = (w) => (w.code <= 1 || w.code === 999) ? 'weather-gradient-sunny' : (w.code <= 3 ? 'weather-gradient-cloudy' : 'weather-gradient-rainy');
 		// ★ 新增這個函式 ★
-	 const getWeatherLiquidClass = (w) => {
+	 		const getWeatherLiquidClass = (w) => {
     			// 根據天氣代碼返回對應的 CSS class
     			if (w.code <= 1 || w.code === 999) return 'weather-sunny'; // 晴朗/預設
     			if (w.code <= 3) return 'weather-cloudy'; // 多雲
     			if (w.code <= 82) return 'weather-rainy'; // 雨天
     			return 'weather-gray'; // 其他 (雪/霧等)
-	};
+			};
 
             const saveSettings = () => { saveData(true); showSettingsModal.value = false; };
             
@@ -1803,11 +1803,11 @@
             const totalExpenseDisplay = computed(() => expenses.value.reduce((s, i) => s + convertCurrency(i.amount, i.currency, displayCurrency.value), 0));
             const saveExpense = () => { if(expenseForm.value.title && expenseForm.value.amount && expenseForm.value.involved.length>0) { if(isEditingExpense.value) { const i = expenses.value.findIndex(e=>e.id===editingExpenseId.value); if(i!==-1) expenses.value[i] = { ...expenseForm.value }; } else { expenses.value.push({ ...expenseForm.value, id: Date.now() }); } showExpenseModal.value = false; } else alert("請填寫完整"); };
             const deleteExpense = (id) => {
-    const index = expenses.value.findIndex(e => e.id === id);
-    if (index !== -1) {
-        expenses.value.splice(index, 1);
-    }
-};
+    		const index = expenses.value.findIndex(e => e.id === id);
+    		if (index !== -1) {
+        		expenses.value.splice(index, 1);
+    			}	
+			};
             const addTraveler = () => { if(newTravelerName.value) travelers.value.push(newTravelerName.value); newTravelerName.value=''; };
             const getCategoryIcon = (cat) => { const icons = { food: 'fas fa-utensils text-orange-400', transport: 'fas fa-train text-blue-500', stay: 'fas fa-bed text-indigo-500', ticket: 'fas fa-ticket-alt text-pink-500', shopping: 'fas fa-shopping-bag text-red-400', other: 'fas fa-sticky-note text-gray-400' }; return icons[cat] || icons['other']; };
 
@@ -1855,17 +1855,17 @@
                 try { const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ' Tokyo')}&format=json&addressdetails=1&limit=1`); const data = await res.json(); if(data && data.length > 0) { item.address = data[0].display_name; alert('已填入地址！'); updateLastItemTransport(); } else { alert('找不到相關地址'); } } catch(e) { alert('連線錯誤'); }
             };
 
-              const fetchFlightInfo = async (direction) => {
-                const flightNum = infoData.value.flights[direction].flightNum;
-                if(!flightNum) return alert('請輸入航班編號');
-                loadingFlight.value = direction;
-                await new Promise(r => setTimeout(r, 600)); 
-                const target = infoData.value.flights[direction];
-                const code = flightNum.toUpperCase().replace(/\s/g, '');
+            const fetchFlightInfo = async (direction) => {
+            const flightNum = infoData.value.flights[direction].flightNum;
+            if(!flightNum) return alert('請輸入航班編號');
+            loadingFlight.value = direction;
+            await new Promise(r => setTimeout(r, 600)); 
+            const target = infoData.value.flights[direction];
+            const code = flightNum.toUpperCase().replace(/\s/g, '');
                 
                 // 2024-2025 亞洲擴大版航線資料庫 (台灣出發/抵達)
                 // 格式：TPE(航廈) -> 目的地(航廈)
-                const flightDB = {
+            const flightDB = {
                     // ... (flightDB content kept as is for brevity) ...
                      // ==========================================
                     // 🇯🇵 日本 - 東京成田 (NRT)
@@ -2093,17 +2093,18 @@
                     // 雅加達 (CGK)
                     'CI761': { dep: '08:45', arr: '13:10', route: 'TPE(T1)→CGK(T3)' },
                     'BR237': { dep: '09:00', arr: '13:20', route: 'TPE(T2)→CGK(T3)' }
-                };
+            };
 
-                if (flightDB[code]) { 
+            if (flightDB[code]) { 
                     const data = flightDB[code]; 
                     target.code = data.route; 
                     target.depTime = data.dep; 
                     target.arrTime = data.arr; 
                     alert(`搜尋成功：${code} 已自動填入。\n航線：${data.route}`); 
-                } else { 
+            } 
+			else { 
                     alert(`查無此航班資料 (${code})。\n請確認格式 (如 JX800) 或請手動輸入。\n目前已擴充：東北亞、東南亞、中港澳等亞洲主要航線。`); 
-                }
+            }
                 loadingFlight.value = null;
             };
 
