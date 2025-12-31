@@ -1365,7 +1365,7 @@
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
+	import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
     // ==========================================
     // 2. Firebase 設定檔
     // ==========================================
@@ -1382,7 +1382,11 @@
     // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app); // ★ 修正：這行原本漏掉了，沒有它就無法連資料庫
-
+	const auth = getAuth(app);
+	// 匿名登入（最簡單，先讓資料回來）
+	signInAnonymously(auth).catch((err) => {
+  	console.error("匿名登入失敗", err);
+	});
     // 設定文件路徑：trips 集合 -> tokyo_share 文件
     const TRIP_DOC_ID = "tokyo_share_v1"; 
     const tripDocRef = doc(db, "trips", TRIP_DOC_ID);
@@ -1391,7 +1395,18 @@
     // Vue 邏輯開始
     // ==========================================
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+	onAuthStateChanged(auth, (user) => {
+    if (!user) return;
 
+    console.log("已登入 UID:", user.uid);
+
+    onSnapshot(tripDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        console.log("資料回來了", docSnap.data());
+        // 你原本 Vue 更新資料的邏輯放這裡
+      }
+    });
+  });
     createApp({
         setup() {
             // State
